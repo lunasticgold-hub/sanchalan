@@ -4,13 +4,13 @@
 import type { DbKey } from './lib/types';
 
 export const DB_IDS: Record<DbKey, string> = {
-  venues: 'a52e6af1-5725-4640-9d84-9867bf2f0695',
-  events: '0cdea88c-0bf5-4f9c-9a51-eaa19a6a20d6',
-  sessions: 'a304ae30-325e-4c41-9ff7-1088bb095146',
-  volunteers: '57b8b612-78c9-471f-90ad-cc113db22699',
-  tasks: '06b35b94-42d2-4fa5-b975-605132b660b9',
-  comms: 'bf5a286c-67c3-4fae-9926-a9338fa7b161',
-  impactReports: '7f70df02-aa65-47d5-8f9e-c2eb9709573d',
+  venues: 'b5f59c32-d08a-41f0-9426-28e5c0421ad9',
+  events: '39c01111-d274-46ef-b063-97c998c11d02',
+  sessions: 'ce4ac85b-98f0-403e-9e9a-b40d60f3b0c0',
+  volunteers: '0e65824d-df42-45e0-9ed6-a00c211ceccf',
+  tasks: 'a4c14a38-4b14-45a9-9122-798f10ce0e39',
+  comms: 'd7120856-337c-4f0f-a92d-08e789396a03',
+  impactReports: '52bb9875-130b-4ede-a36d-2673d4631c64',
 };
 
 export const DB_TITLES: Record<DbKey, string> = {
