@@ -268,7 +268,30 @@ export function VenuesView({ records }: { records: Records }) {
 
 export function CommsView({ records }: { records: Records }) {
   const [sel, setSel] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendMsg, setSendMsg] = useState('');
   const c = sel ? records.comms.find((x) => x.id === sel) : null;
+
+  const sendEmail = async () => {
+    if (!c) return;
+    const to = prompt('Send to email address:', '');
+    if (!to?.trim()) return;
+    setSending(true);
+    setSendMsg('');
+    try {
+      const r = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: 'email', to: to.trim(), subject: c.name, body: c.draft }),
+      });
+      const data = await r.json();
+      setSendMsg(r.ok ? '✓ Email sent' : `⚠ ${data.error ?? 'Send failed'}`);
+    } catch {
+      setSendMsg('⚠ Send failed — check connection');
+    } finally {
+      setSending(false);
+    }
+  };
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Communications</h1>
@@ -301,6 +324,44 @@ export function CommsView({ records }: { records: Records }) {
           <Rel label="Status" value={<Badge tone={statusTone(c.status)}>{c.status}</Badge>} />
           <Rel label="Source" value={<ProvenanceBadge source={c.source} />} />
           <Rel label="Draft" value={<span className="whitespace-pre-line">{c.draft}</span>} />
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <div className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-gray-500">Send this message</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(c.draft);
+                }}
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Copy for WhatsApp
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(c.draft)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-md bg-[#25D366] px-3 py-1.5 text-[13px] font-medium text-white hover:bg-[#1da851]"
+              >
+                Open in WhatsApp
+              </a>
+              <a
+                href={`mailto:?subject=${encodeURIComponent(c.name)}&body=${encodeURIComponent(c.draft)}`}
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Send via Email
+              </a>
+              <button
+                onClick={sendEmail}
+                disabled={sending}
+                className="rounded-md bg-gray-900 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+              >
+                {sending ? 'Sending…' : 'Send email now'}
+              </button>
+            </div>
+            {sendMsg && <p className="mt-2 text-[13px] font-medium text-gray-700">{sendMsg}</p>}
+            <p className="mt-2 text-[12px] text-gray-500">
+              Copy the message into your WhatsApp group, or send it through your email. Automated delivery via email API and WhatsApp Business is on the roadmap.
+            </p>
+          </div>
         </Drawer>
       )}
     </div>
