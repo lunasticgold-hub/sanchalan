@@ -114,6 +114,18 @@ export default function App() {
   const [selectedImpactId, setSelectedImpactId] = useState<string | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
+  const [activeEventId, setActiveEventId] = useState<string>('');
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [customEvents, setCustomEvents] = useState<{ id: string; name: string }[]>([]);
+
+  const events = useMemo(() => {
+    const fromRecords = (records?.events ?? []).map((e) => ({ id: e.id, name: e.name }));
+    return [...fromRecords, ...customEvents];
+  }, [records, customEvents]);
+
+  useEffect(() => {
+    if (!activeEventId && events.length > 0) setActiveEventId(events[0].id);
+  }, [events, activeEventId]);
 
   const load = async () => {
     setSyncing(true);
@@ -194,7 +206,16 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen bg-[#fafafa] text-gray-900">
-      <Sidebar view={view} setView={goView} connected={!demo} pendingCount={pendingCount} />
+      <Sidebar
+        view={view}
+        setView={goView}
+        connected={!demo}
+        pendingCount={pendingCount}
+        events={events}
+        activeEventId={activeEventId}
+        onSelectEvent={setActiveEventId}
+        onAddEvent={() => setShowAddEvent(true)}
+      />
 
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-6 py-6">
@@ -269,6 +290,50 @@ export default function App() {
       </main>
 
       {palette && <CommandPalette records={records} onGo={goView} onClose={() => setPalette(false)} />}
+
+      {showAddEvent && (
+        <AddEventModal
+          onClose={() => setShowAddEvent(false)}
+          onAdd={(name) => {
+            const id = `custom-${Date.now()}`;
+            setCustomEvents((cs) => [...cs, { id, name }]);
+            setActiveEventId(id);
+            setShowAddEvent(false);
+            setView('notion');
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddEventModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name: string) => void }) {
+  const [name, setName] = useState('');
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-[16px] font-semibold text-gray-900">Add your event</h2>
+        <p className="mt-1 text-[13px] text-gray-600">
+          Give your event a name. Then connect your Notion workspace so Sanchalan can read your event data.
+        </p>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Design Conf 2026"
+          className="mt-4 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+          autoFocus
+        />
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button
+            onClick={() => name.trim() && onAdd(name.trim())}
+            disabled={!name.trim()}
+            className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

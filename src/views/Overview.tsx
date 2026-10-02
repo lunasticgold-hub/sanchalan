@@ -149,6 +149,54 @@ export default function Overview({
           <Stat label="Pending comms" value={String(draftComms)} sub="drafts awaiting review" />
         </div>
       </section>
+
+      {/* Event data */}
+      <section>
+        <SectionTitle>Event data</SectionTitle>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[
+            { view: 'attendees' as View, label: 'Attendees', count: records.attendees.length, sub: 'check-in status' },
+            { view: 'sessions' as View, label: 'Sessions', count: records.sessions.length, sub: 'agenda' },
+            { view: 'venues' as View, label: 'Venues', count: records.venues.length, sub: 'spaces & capacity' },
+            { view: 'volunteers' as View, label: 'Volunteers', count: records.volunteers.length, sub: 'team' },
+            { view: 'speakers' as View, label: 'Speakers', count: records.speakers.length, sub: 'lineup' },
+            { view: 'sponsors' as View, label: 'Sponsors', count: records.sponsors.length, sub: 'partners' },
+            { view: 'tasks' as View, label: 'Tasks', count: records.tasks.length, sub: `${openTasks} open` },
+            { view: 'comms' as View, label: 'Communications', count: records.comms.length, sub: 'announcements' },
+          ].map((c) => (
+            <button
+              key={c.view}
+              onClick={() => setView(c.view)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300 hover:bg-gray-50"
+            >
+              <div className="text-[20px] font-semibold text-gray-900">{c.count}</div>
+              <div className="text-[12px] font-medium text-gray-700">{c.label}</div>
+              <div className="text-[11px] text-gray-400">{c.sub}</div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Tools */}
+      <section>
+        <SectionTitle>Tools</SectionTitle>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {[
+            { view: 'live' as View, label: 'Live Operations', desc: 'Event-day command view — now, next, coverage' },
+            { view: 'preflight' as View, label: 'Pre-flight', desc: 'Readiness checklist before the event' },
+            { view: 'simulate' as View, label: 'Simulate', desc: 'What-if scenarios without touching Notion' },
+          ].map((t) => (
+            <button
+              key={t.view}
+              onClick={() => setView(t.view)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300 hover:bg-gray-50"
+            >
+              <div className="text-[13px] font-semibold text-gray-900">{t.label}</div>
+              <div className="mt-0.5 text-[12px] text-gray-500">{t.desc}</div>
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
