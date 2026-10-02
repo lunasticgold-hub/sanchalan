@@ -91,7 +91,28 @@ export interface ImpactPlan {
 export type ParsedChange =
   | { type: 'venue_change'; params: { fromVenueName: string; toVenueName: string } }
   | { type: 'time_shift'; params: { minutes: number } }
+  | { type: 'general'; params: GeneralChangeParams }
   | { type: 'none'; params: Record<string, never> };
+
+// A change the engine can't model precisely, but can still act on:
+// named entities are matched against Notion records, risks are flagged,
+// and follow-up tasks + comms drafts are generated for human approval.
+export interface GeneralChangeParams {
+  action:
+    | 'cancel' | 'add' | 'remove' | 'assign' | 'update' | 'confirm'
+    | 'announce' | 'escalate' | 'delay' | 'other';
+  summary: string;
+  entities: {
+    sessions: string[];
+    venues: string[];
+    volunteers: string[];
+    speakers: string[];
+    tasks: string[];
+    sponsors: string[];
+    attendees: string[];
+  };
+  detail: string;
+}
 
 // A submitted operational change moving through the approval pipeline.
 export type ChangeStatus = 'draft' | 'analyzed' | 'applying' | 'applied' | 'cancelled';

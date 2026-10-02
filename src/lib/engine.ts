@@ -4,7 +4,7 @@
 
 import { SRC } from '../config';
 import type {
-  CommsDraft, ImpactDraft, ImpactPlan, PlannedWrite, Records, Risk, TaskDraft,
+  CommsDraft, GeneralChangeParams, ImpactDraft, ImpactPlan, PlannedWrite, Records, Risk, TaskDraft,
 } from './types';
 
 export const EST_ATTENDEES = 200;
@@ -187,4 +187,192 @@ export function applyTimeShift(r: Records, opts: { minutes: number }): ImpactPla
   }];
 
   return { updates, newTasks, newComms: [], newImpactReports, risks, summary };
+}
+
+// ---------- general change ----------
+// Acts on the change as described: match every named entity against the
+// Notion records, flag the people/sessions involved, surface risks, and
+// generate follow-up tasks + a comms draft for human approval. The engine
+// never guesses field-level writes for a change it can't model precisely.
+
+type EntityKind = 'sessions' | 'venues' | 'volunteers' | 'speakers' | 'tasks' | 'sponsors' | 'attendees';
+
+const ENTITY_LABEL: Record<EntityKind, string> = {
+  sessions: 'session', venues: 'venue', volunteers: 'volunteer', speakers: 'speaker',
+  tasks: 'task', sponsors: 'sponsor', attendees: 'attendee',
+};
+
+function recordName(db: EntityKind, rec: any): string {
+  if (db === 'tasks') return String(rec.title ?? '');
+  if (db === 'sponsors') return String(rec.company ?? '');
+  return String(rec.name ?? '');
+}
+
+// Match quality: exact name > whole-word mention > loose substring.
+function matchScore(record: string, name: string): number {
+  const r = record.toLowerCase();
+  const n = name.toLowerCase().trim();
+  if (!n || !r) return 0;
+  if (r === n) return 3;
+  if (new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(r)) return 2;
+  if (r.includes(n) || n.includes(r)) return 1;
+  return 0;
+}
+
+function findBest(records: any[], db: EntityKind, name: string): any | null {
+  let best: any = null;
+  let bestScore = 0;
+  for (const rec of records) {
+    const s = matchScore(recordName(db, rec), name);
+    if (s > bestScore) { bestScore = s; best = rec; }
+  }
+  return best;
+}
+
+export function applyGeneralChange(r: Records, params: GeneralChangeParams): ImpactPlan {
+  const { action, summary, entities, detail } = params;
+  const updates: PlannedWrite[] = [];
+  const newTasks: TaskDraft[] = [];
+  const newComms: CommsDraft[] = [];
+  const risks: Risk[] = [];
+
+  const matched: Record<EntityKind, { id: string; name: string }[]> = {
+    sessions: [], venues: [], volunteers: [], speakers: [], tasks: [], sponsors: [], attendees: [],
+  };
+  const missing: string[] = [];
+
+  const seenIds = new Set<string>();
+  const kinds = Object.keys(ENTITY_LABEL) as EntityKind[];
+  for (const kind of kinds) {
+    const names = (entities[kind] ?? []).map((n) => n.trim()).filter(Boolean);
+    for (const name of names) {
+      // Search every record kind: the parser buckets names loosely, so a
+      // venue name may arrive in the sessions bucket and vice versa.
+      let best: { kind: EntityKind; id: string; name: string; score: number } | null = null;
+      for (const k of kinds) {
+        const rec = findBest(r[k] as any[], k, name);
+        if (rec) {
+          const score = matchScore(recordName(k, rec), name);
+          if (best === null || score > best.score) best = { kind: k, id: rec.id, name: recordName(k, rec), score };
+        }
+      }
+      if (best !== null && !seenIds.has(best.id)) {
+        seenIds.add(best.id);
+        matched[best.kind].push({ id: best.id, name: best.name });
+      } else if (best === null) {
+        missing.push(name);
+      }
+    }
+  }
+
+  const affectedSessionIds = matched.sessions.map((s) => s.id);
+  const affectedSessions = r.sessions.filter((s) => affectedSessionIds.includes(s.id));
+
+  // 1. Unknown entities → P2 risks (verify before acting)
+  for (const m of missing) {
+    risks.push({ level: 'P2', text: `Named "${m}" was not found in Notion — verify the name before acting.` });
+  }
+
+  // 2. Volunteers on affected sessions need reconfirmation
+  const movedIds = new Set(affectedSessionIds);
+  const flaggedVols = r.volunteers.filter((v) => v.sessionIds.some((id) => movedIds.has(id)));
+  const extraVols = matched.volunteers.filter((v) => !flaggedVols.some((f) => f.id === v.id));
+  if (flaggedVols.length > 0 || extraVols.length > 0) {
+    const names = [...flaggedVols.map((v) => v.name), ...extraVols.map((v) => v.name)];
+    risks.push({
+      level: 'P1',
+      text: `${names.length} volunteer(s) involved — reconfirm: ${names.join(', ')}.`,
+    });
+  }
+
+  // 3. Capacity sanity check on mentioned venues
+  for (const v of matched.venues) {
+    const rec = r.venues.find((x) => x.id === v.id);
+    if (rec && rec.capacity < EST_ATTENDEES) {
+      risks.push({
+        level: 'P1',
+        text: `${rec.name} capacity ${rec.capacity} < expected ~${EST_ATTENDEES} attendees — confirm it can host the affected sessions.`,
+      });
+    }
+  }
+
+  // 4. Action-specific risks
+  if (action === 'cancel' && affectedSessions.length > 0) {
+    risks.push({
+      level: 'P0',
+      text: `Cancelling ${affectedSessions.length} session(s) affects registered attendees — announce before removing from the schedule.`,
+    });
+  }
+  if (action === 'escalate') {
+    risks.push({ level: 'P1', text: 'Escalated change — needs organizer sign-off before anything is applied.' });
+  }
+
+  // 5. Follow-up tasks (AI-generated, human approves)
+  const actionVerb: Record<string, string> = {
+    cancel: 'Cancel', add: 'Add', remove: 'Remove', assign: 'Assign', update: 'Update',
+    confirm: 'Confirm', announce: 'Announce', escalate: 'Escalate', delay: 'Reschedule', other: 'Handle',
+  };
+  const pastTense: Record<string, string> = {
+    cancel: 'Cancelled', add: 'Added', remove: 'Removed', assign: 'Assigned', update: 'Updated',
+    confirm: 'Confirmed', announce: 'Announced', escalate: 'Escalated', delay: 'Rescheduled', other: 'Handled',
+  };
+  const verb = actionVerb[action] ?? 'Handle';
+  const verbPast = pastTense[action] ?? 'Handled';
+  for (const s of affectedSessions) {
+    const owner = r.volunteers.find((v) => v.sessionIds.includes(s.id));
+    newTasks.push({
+      title: `${verb} "${s.name}" — ${summary}`,
+      ownerId: owner?.id ?? '', sessionId: s.id, due: s.starts,
+      status: 'Todo', priority: action === 'cancel' ? 'P0' : 'P1', source: SRC.AI,
+      detail: `AI-generated from ops update: "${summary}". ${detail ? 'Details: ' + detail + '. ' : ''}Verify in Notion, then mark done.`,
+    });
+  }
+  for (const v of matched.volunteers) {
+    if (!newTasks.some((t) => t.ownerId === v.id)) {
+      newTasks.push({
+        title: `${verb} — brief ${v.name}: ${summary}`,
+        ownerId: v.id, sessionId: affectedSessionIds[0] ?? '', due: affectedSessions[0]?.starts ?? '',
+        status: 'Todo', priority: 'P1', source: SRC.AI,
+        detail: `AI-generated from ops update: "${summary}". ${detail ? 'Details: ' + detail : ''}`,
+      });
+    }
+  }
+  if (affectedSessions.length === 0 && matched.volunteers.length === 0 && missing.length > 0) {
+    newTasks.push({
+      title: `Verify change details: ${summary}`,
+      ownerId: '', sessionId: '', due: '',
+      status: 'Todo', priority: 'P2', source: SRC.AI,
+      detail: `AI-generated: named entities could not be matched to Notion records. ${detail}`,
+    });
+  }
+
+  // 6. Comms draft
+  const who: string[] = [];
+  if (affectedSessions.length) who.push(`${affectedSessions.length} session(s): ${affectedSessions.map((s) => s.name).join(', ')}`);
+  if (matched.venues.length) who.push(`venue(s): ${matched.venues.map((v) => v.name).join(', ')}`);
+  newComms.push({
+    name: 'Operational update',
+    eventId: affectedSessions[0]?.eventId ?? r.events[0]?.id ?? '',
+    audience: 'Attendees', channel: 'WhatsApp', status: 'Draft', source: SRC.AI,
+    draft: `Update: ${summary}${who.length ? `\nAffected: ${who.join('; ')}.` : ''}${detail ? `\n${detail}` : ''}\n— Team`,
+  });
+
+  const entityCount = (Object.keys(matched) as EntityKind[]).reduce((n, k) => n + matched[k].length, 0);
+  const summaryText =
+    `${verbPast} change: ${summary} ` +
+    `Matched ${entityCount} entit${entityCount === 1 ? 'y' : 'ies'} in Notion` +
+    (missing.length ? ` (${missing.length} unmatched)` : '') + '. ' +
+    `${newTasks.length} follow-up task(s), 1 comms draft created. ` +
+    `${risks.length} risk(s) flagged for review.`;
+
+  const newImpactReports: ImpactDraft[] = [{
+    name: `Impact report — ${summary.slice(0, 60)}`,
+    trigger: `Ops update: ${summary}`,
+    summary: summaryText,
+    affectedSessionIds,
+    newTaskIds: [],
+    source: SRC.AI,
+  }];
+
+  return { updates, newTasks, newComms, newImpactReports, risks, summary: summaryText };
 }

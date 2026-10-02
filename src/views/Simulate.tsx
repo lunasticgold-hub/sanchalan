@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import type { ImpactPlan, ParsedChange, Records } from '../lib/types';
-import { applyTimeShift, applyVenueChange, EST_ATTENDEES } from '../lib/engine';
+import { applyGeneralChange, applyTimeShift, applyVenueChange, EST_ATTENDEES } from '../lib/engine';
 import { parseUpdate } from '../lib/api';
 import { Badge, Btn, EmptyState, SectionTitle, prioTone, td, th, tr } from '../components/ui';
 
@@ -51,9 +51,14 @@ export default function Simulate({
     setBusy(true); setError('');
     try {
       const parsed = await parseUpdate(text);
-      if (parsed.type === 'none') { setError('Could not parse that scenario. Try "What if Main Audi is unavailable?"'); setBusy(false); return; }
+      if (parsed.type === 'none') { setError('Could not understand that scenario. Describe the change plainly, e.g. "What if the keynote is cancelled?"'); setBusy(false); return; }
       // Handle "what if X is unavailable" phrasing → treat as venue inquiry
-      const plan = parsed.type === 'venue_change' ? applyVenueChange(records, parsed.params) : applyTimeShift(records, parsed.params);
+      const plan =
+        parsed.type === 'venue_change'
+          ? applyVenueChange(records, parsed.params)
+          : parsed.type === 'time_shift'
+            ? applyTimeShift(records, parsed.params)
+            : applyGeneralChange(records, parsed.params);
       setResult({ input: text, parsed, plan });
     } finally { setBusy(false); }
   };

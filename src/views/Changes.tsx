@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type {
   ChangeRequest, ImpactPlan, ParsedChange, Records,
 } from '../lib/types';
-import { applyTimeShift, applyVenueChange } from '../lib/engine';
+import { applyGeneralChange, applyTimeShift, applyVenueChange } from '../lib/engine';
 import { applyPlan, parseUpdate } from '../lib/api';
 import ProvenanceBadge from '../components/ProvenanceBadge';
 import {
@@ -109,6 +109,36 @@ function buildTree(records: Records, plan: ImpactPlan, parsed: ParsedChange): TN
       },
     ];
   }
+  // general: affected entities grouped by kind → people involved
+  if (parsed.type === 'general') {
+    const planSessions = new Set(plan.newTasks.map((t) => t.sessionId).filter(Boolean));
+    const groups: TNode[] = [];
+    for (const s of records.sessions.filter((s) => planSessions.has(s.id))) {
+      const vols = records.volunteers.filter((v) => v.sessionIds.includes(s.id));
+      groups.push({
+        label: s.name,
+        detail: `${fmtTime(s.starts)}–${fmtTime(s.ends)}`,
+        tone: 'session',
+        children: vols.map((v) => ({ label: v.name, detail: `${v.role} · brief`, tone: 'vol' as const, children: [] })),
+      });
+    }
+    return [
+      {
+        label: parsed.params.summary,
+        detail: `general · ${parsed.params.action}`,
+        tone: 'venue',
+        children: [
+          ...groups,
+          ...plan.newComms.map((c) => ({
+            label: c.name,
+            detail: `${c.channel} → ${c.audience}`,
+            tone: 'comms' as const,
+            children: [],
+          })),
+        ],
+      },
+    ];
+  }
   // time_shift: schedule node → sessions → assigned volunteers
   const mins = parsed.type === 'time_shift' ? parsed.params.minutes : 0;
   return [
@@ -194,14 +224,16 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
     try {
       const parsed = await parseUpdate(text);
       if (parsed.type === 'none') {
-        setParseError('Could not parse that update. Try "Move all sessions from Main Audi to Seminar Hall B" or "Delay everything by 30 minutes".');
+        setParseError('Could not understand that as an ops update. Try describing the change plainly, e.g. "Cancel the keynote session" or "Assign Priya to registration desk".');
         setParsing(false);
         return;
       }
       const plan =
         parsed.type === 'venue_change'
           ? applyVenueChange(records, parsed.params)
-          : applyTimeShift(records, parsed.params);
+          : parsed.type === 'time_shift'
+            ? applyTimeShift(records, parsed.params)
+            : applyGeneralChange(records, parsed.params);
       const cr: ChangeRequest = {
         id: uid(),
         input: text,
@@ -286,7 +318,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
   const renderAnalysis = (c: ChangeRequest) => {
     const plan = c.plan!;
     const parsed = c.parsed!;
-    const moved = movedSessionIds(plan);
+    // General changes have no session *updates*; their affected sessions
+    // live on the generated follow-up tasks.
+    const moved = parsed.type === 'general'
+      ? [...new Set(plan.newTasks.map((t) => t.sessionId).filter(Boolean))]
+      : movedSessionIds(plan);
     const vols = flaggedVolunteers(records, moved);
     const sessU = plan.updates.filter((u) => u.db === 'sessions');
     const taskU = plan.updates.filter((u) => u.db === 'tasks');
@@ -327,6 +363,12 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
                 <div className="text-[15px] font-semibold">
                   All sessions {parsed.params.minutes > 0 ? 'delayed' : 'preponed'} by {Math.abs(parsed.params.minutes)} min
                 </div>
+              </div>
+            )}
+            {parsed.type === 'general' && (
+              <div>
+                <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Change · {parsed.params.action}</div>
+                <div className="text-[15px] font-semibold">{parsed.params.summary}</div>
               </div>
             )}
             <div className="ml-auto flex items-center gap-2">

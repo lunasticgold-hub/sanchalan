@@ -23,7 +23,9 @@ function ChangeAudit({ c, maps }: { c: ChangeRequest; maps: Maps }) {
       ? `${c.parsed.params.fromVenueName} → ${c.parsed.params.toVenueName}`
       : c.parsed?.type === 'time_shift'
         ? `Schedule ${c.parsed.params.minutes > 0 ? 'delayed' : 'preponed'} by ${Math.abs(c.parsed.params.minutes)} min`
-        : c.input;
+        : c.parsed?.type === 'general'
+          ? c.parsed.params.summary
+          : c.input;
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-5 py-4">
       <h2 className="text-[16px] font-semibold text-gray-900">Change Impact Report</h2>

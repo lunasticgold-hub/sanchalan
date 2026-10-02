@@ -2,7 +2,7 @@
 // (or Notion) is not configured.
 
 import { MOCK } from './mock';
-import type { DbKey, ImpactPlan, ParsedChange, Records } from './types';
+import type { DbKey, GeneralChangeParams, ImpactPlan, ParsedChange, Records } from './types';
 
 const DB_KEYS: DbKey[] = ['venues', 'events', 'sessions', 'volunteers', 'tasks', 'comms', 'impactReports', 'attendees', 'speakers', 'sponsors', 'risks'];
 
@@ -50,7 +50,52 @@ export async function parseUpdate(text: string): Promise<ParsedChange & { via?: 
       return { type: 'time_shift', params: { minutes: /prepone|bring\s+forward/i.test(tm[1]) ? -n : n }, via: 'local' };
     }
     const vm = t.match(/(?:move|shift|relocate|change)\s+(?:all\s+sessions\s+(?:from\s+)?|the\s+)?(.+?)\s+(?:to|into)\s+([A-Za-z0-9 .'\-]+?)(?:\.|$)/i);
-    if (vm) return { type: 'venue_change', params: { fromVenueName: vm[1].trim(), toVenueName: vm[2].trim() }, via: 'local' };
+    if (vm && !/\d+\s*(min(ute)?s?|hr?s?|hours?)/i.test(t)) return { type: 'venue_change', params: { fromVenueName: vm[1].trim(), toVenueName: vm[2].trim() }, via: 'local' };
+    const late = t.match(/(\d+)\s*(min(?:ute)?s?|hr?s?|hours?)\s+late\b/i) || t.match(/\blate\s+by\s+(\d+)\s*(min(?:ute)?s?|hr?s?|hours?)/i);
+    if (late) {
+      const n = parseInt(late[1], 10) * (/hr|hour/i.test(late[2]) ? 60 : 1);
+      return { type: 'time_shift', params: { minutes: n }, via: 'local' };
+    }
+    // Generic path: action verb + named entities, so free-form updates still act.
+    const entities: GeneralChangeParams['entities'] = {
+      sessions: [], venues: [], volunteers: [], speakers: [], tasks: [], sponsors: [], attendees: [],
+    };
+    const seen = new Set<string>();
+    const pushName = (name: string) => {
+      const n = name.trim().replace(/[.,;:!?]+$/, '');
+      if (n.length >= 3 && !seen.has(n.toLowerCase())) { seen.add(n.toLowerCase()); entities.sessions.push(n); }
+    };
+    const verbRx = /\b(cancel|call off|scrap|add|bring in|onboard|remove|drop|assign|reassign|hand over|update|revise|confirm|reconfirm|verify|announce|notify|escalate|flag|delay|postpone|prepone|reschedule)\b/i;
+    for (const m of t.matchAll(/"([^"]{3,60})"|'([^']{3,60})'/g)) pushName(m[1] ?? m[2]);
+    for (const m of t.matchAll(/\b([A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]{2,})+)\b/g)) {
+      let phrase = m[1];
+      if (m.index === 0) {
+        const first = phrase.split(/\s+/)[0];
+        if (verbRx.test(first)) phrase = phrase.slice(first.length).trim();
+      }
+      pushName(phrase);
+    }
+    const verb = t.match(verbRx);
+    const actionMap: Array<[RegExp, GeneralChangeParams['action']]> = [
+      [/cancel|call off|scrap/i, 'cancel'], [/add|bring in|onboard/i, 'add'],
+      [/remove|drop/i, 'remove'], [/assign|reassign|hand over/i, 'assign'],
+      [/update|revise/i, 'update'], [/confirm|reconfirm|verify/i, 'confirm'],
+      [/announce|notify/i, 'announce'], [/escalate|flag/i, 'escalate'],
+      [/delay|postpone|prepone|reschedule/i, 'delay'],
+    ];
+    const action = actionMap.find(([rx]) => rx.test(t))?.[1] ?? 'other';
+    if (verb || entities.sessions.length > 0) {
+      const summary = t.replace(/[.]$/, '');
+      return {
+        type: 'general',
+        params: {
+          action, entities,
+          summary: summary.charAt(0).toUpperCase() + summary.slice(1),
+          detail: verb ? `Detected action: "${verb[1]}" (local fallback).` : 'Parsed from free text (local fallback).',
+        },
+        via: 'local',
+      };
+    }
     return { type: 'none', params: {}, via: 'local' };
   }
 }
