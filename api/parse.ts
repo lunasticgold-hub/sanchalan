@@ -35,7 +35,7 @@ async function geminiParse(text: string): Promise<ParsedChange | null> {
       'If it is not an ops change, type = "none" and params = {}. ' +
       `Update: """${text.slice(0, 500)}"""`;
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
