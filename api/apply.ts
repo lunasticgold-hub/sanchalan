@@ -10,6 +10,10 @@ const DB_IDS: Record<string, string> = {
   tasks: 'a4c14a38-4b14-45a9-9122-798f10ce0e39',
   comms: 'd7120856-337c-4f0f-a92d-08e789396a03',
   impactReports: '52bb9875-130b-4ede-a36d-2673d4631c64',
+  attendees: '3ed9bf2c-3456-810b-914e-d065e84db43b',
+  speakers: '3ed9bf2c-3456-8104-a25a-deed18594e07',
+  sponsors: '3ed9bf2c-3456-8143-a38b-cdd50a1d098d',
+  risks: '3ed9bf2c-3456-81c1-b603-e9df1594e35d',
 };
 
 const SRC_AI = '🤖 AI-generated';
@@ -41,6 +45,10 @@ const PROP_TYPES: Record<string, Record<string, NType>> = {
   tasks: { Title: 'title', Owner: 'relation', Session: 'relation', Due: 'date', Status: 'select', Priority: 'select', Source: 'select', Detail: 'rich_text' },
   comms: { Name: 'title', Event: 'relation', Audience: 'select', Channel: 'select', Draft: 'rich_text', Status: 'select', Source: 'select' },
   impactReports: { Name: 'title', Trigger: 'rich_text', Summary: 'rich_text', 'Affected sessions': 'relation', 'New tasks': 'relation', Source: 'select' },
+  attendees: { Name: 'title', Ticket: 'select', Organization: 'rich_text', 'Check-in': 'select', Sessions: 'relation', Event: 'relation' },
+  speakers: { Name: 'title', Session: 'relation', Arrival: 'select', Bio: 'rich_text', 'AV requirements': 'rich_text', Contact: 'rich_text', Confirmation: 'select' },
+  sponsors: { Company: 'title', Tier: 'select', Contact: 'rich_text', Booth: 'select', Deliverables: 'multi_select', Payment: 'select' },
+  risks: { Name: 'title', Severity: 'select', Category: 'select', Description: 'rich_text', Status: 'select', Source: 'select' },
 };
 
 const DRAFT_MAP: Record<string, Record<string, string>> = {
@@ -51,6 +59,10 @@ const DRAFT_MAP: Record<string, Record<string, string>> = {
   tasks: { title: 'Title', ownerId: 'Owner', sessionId: 'Session', due: 'Due', status: 'Status', priority: 'Priority', source: 'Source', detail: 'Detail' },
   comms: { name: 'Name', eventId: 'Event', audience: 'Audience', channel: 'Channel', draft: 'Draft', status: 'Status', source: 'Source' },
   impactReports: { name: 'Name', trigger: 'Trigger', summary: 'Summary', affectedSessionIds: 'Affected sessions', newTaskIds: 'New tasks', source: 'Source' },
+  attendees: { name: 'Name', ticket: 'Ticket', organization: 'Organization', checkin: 'Check-in', sessionIds: 'Sessions', eventId: 'Event' },
+  speakers: { name: 'Name', sessionId: 'Session', arrival: 'Arrival', bio: 'Bio', avRequirements: 'AV requirements', contact: 'Contact', confirmation: 'Confirmation' },
+  sponsors: { company: 'Company', tier: 'Tier', contact: 'Contact', booth: 'Booth', deliverables: 'Deliverables', payment: 'Payment' },
+  risks: { name: 'Name', severity: 'Severity', category: 'Category', description: 'Description', status: 'Status', source: 'Source' },
 };
 
 function toNotionProps(db: string, props: Record<string, any>): Record<string, any> {

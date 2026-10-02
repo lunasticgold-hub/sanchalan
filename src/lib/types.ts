@@ -7,7 +7,11 @@ export type DbKey =
   | 'volunteers'
   | 'tasks'
   | 'comms'
-  | 'impactReports';
+  | 'impactReports'
+  | 'attendees'
+  | 'speakers'
+  | 'sponsors'
+  | 'risks';
 
 export interface Venue { id: string; name: string; capacity: number; location: string; facilities: string[] }
 export interface EventRec { id: string; name: string; date: string; venueId: string; status: string; organizer: string }
@@ -31,6 +35,22 @@ export interface ImpactReport {
   id: string; name: string; trigger: string; summary: string;
   affectedSessionIds: string[]; newTaskIds: string[]; source: string;
 }
+export interface Attendee {
+  id: string; name: string; ticket: string; organization: string;
+  checkin: string; sessionIds: string[]; eventId: string;
+}
+export interface Speaker {
+  id: string; name: string; sessionId: string; arrival: string;
+  bio: string; avRequirements: string; contact: string; confirmation: string;
+}
+export interface Sponsor {
+  id: string; company: string; tier: string; contact: string;
+  booth: string; deliverables: string[]; payment: string;
+}
+export interface RiskRec {
+  id: string; name: string; severity: string; category: string;
+  description: string; status: string; source: string;
+}
 
 export interface Records {
   venues: Venue[];
@@ -40,6 +60,10 @@ export interface Records {
   tasks: Task[];
   comms: Comms[];
   impactReports: ImpactReport[];
+  attendees: Attendee[];
+  speakers: Speaker[];
+  sponsors: Sponsor[];
+  risks: RiskRec[];
 }
 
 // A single relation reference inside update props: { rel: '<pageId>' }.

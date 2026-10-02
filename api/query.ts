@@ -10,6 +10,10 @@ const DB_IDS: Record<string, string> = {
   tasks: 'a4c14a38-4b14-45a9-9122-798f10ce0e39',
   comms: 'd7120856-337c-4f0f-a92d-08e789396a03',
   impactReports: '52bb9875-130b-4ede-a36d-2673d4631c64',
+  attendees: '3ed9bf2c-3456-810b-914e-d065e84db43b',
+  speakers: '3ed9bf2c-3456-8104-a25a-deed18594e07',
+  sponsors: '3ed9bf2c-3456-8143-a38b-cdd50a1d098d',
+  risks: '3ed9bf2c-3456-81c1-b603-e9df1594e35d',
 };
 
 const NAPI = 'https://api.notion.com/v1';
@@ -47,6 +51,10 @@ function notionRowToFlat(db: string, page: any): Record<string, any> {
     case 'tasks': return { ...base, title: titleOf(p.Title), ownerId: relOf(p.Owner)[0] ?? '', sessionId: relOf(p.Session)[0] ?? '', due: dateOf(p.Due), status: selOf(p.Status), priority: selOf(p.Priority), source: selOf(p.Source), detail: richOf(p.Detail) };
     case 'comms': return { ...base, name: titleOf(p.Name), eventId: relOf(p.Event)[0] ?? '', audience: selOf(p.Audience), channel: selOf(p.Channel), draft: richOf(p.Draft), status: selOf(p.Status), source: selOf(p.Source) };
     case 'impactReports': return { ...base, name: titleOf(p.Name), trigger: richOf(p.Trigger), summary: richOf(p.Summary), affectedSessionIds: relOf(p['Affected sessions']), newTaskIds: relOf(p['New tasks']), source: selOf(p.Source) };
+    case 'attendees': return { ...base, name: titleOf(p.Name), ticket: selOf(p.Ticket), organization: richOf(p.Organization), checkin: selOf(p['Check-in']), sessionIds: relOf(p.Sessions), eventId: relOf(p.Event)[0] ?? '' };
+    case 'speakers': return { ...base, name: titleOf(p.Name), sessionId: relOf(p.Session)[0] ?? '', arrival: selOf(p.Arrival), bio: richOf(p.Bio), avRequirements: richOf(p['AV requirements']), contact: richOf(p.Contact), confirmation: selOf(p.Confirmation) };
+    case 'sponsors': return { ...base, company: titleOf(p.Company), tier: selOf(p.Tier), contact: richOf(p.Contact), booth: selOf(p.Booth), deliverables: msOf(p.Deliverables), payment: selOf(p.Payment) };
+    case 'risks': return { ...base, name: titleOf(p.Name), severity: selOf(p.Severity), category: selOf(p.Category), description: richOf(p.Description), status: selOf(p.Status), source: selOf(p.Source) };
     default: return { ...base };
   }
 }

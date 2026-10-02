@@ -11,6 +11,10 @@ export const DB_IDS: Record<DbKey, string> = {
   tasks: 'a4c14a38-4b14-45a9-9122-798f10ce0e39',
   comms: 'd7120856-337c-4f0f-a92d-08e789396a03',
   impactReports: '52bb9875-130b-4ede-a36d-2673d4631c64',
+  attendees: '3ed9bf2c-3456-810b-914e-d065e84db43b',
+  speakers: '3ed9bf2c-3456-8104-a25a-deed18594e07',
+  sponsors: '3ed9bf2c-3456-8143-a38b-cdd50a1d098d',
+  risks: '3ed9bf2c-3456-81c1-b603-e9df1594e35d',
 };
 
 export const DB_TITLES: Record<DbKey, string> = {
@@ -21,6 +25,10 @@ export const DB_TITLES: Record<DbKey, string> = {
   tasks: 'Sanchalan · Tasks',
   comms: 'Sanchalan · Comms Log',
   impactReports: 'Sanchalan · Impact Reports',
+  attendees: 'Sanchalan · Attendees',
+  speakers: 'Sanchalan · Speakers',
+  sponsors: 'Sanchalan · Sponsors',
+  risks: 'Sanchalan · Risks',
 };
 
 // Exact property names per database (must match Notion)

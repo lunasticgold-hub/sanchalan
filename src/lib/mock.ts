@@ -48,4 +48,27 @@ export const MOCK: Records = {
   impactReports: [
     { id: 'ir-1', name: 'Impact report — keynote deck delayed', trigger: 'Speaker shared deck 1 day late', summary: 'AV rehearsal (t-10) blocked; no timing impact on other sessions yet.', affectedSessionIds: ['s-2'], newTaskIds: ['t-10'], source: SRC.VERIFIED },
   ],
+  attendees: [
+    { id: 'a-1', name: 'Aarav Patel', ticket: 'VIP', organization: 'Zerodha', checkin: 'Checked in', sessionIds: ['s-2', 's-3'], eventId: 'e-1' },
+    { id: 'a-2', name: 'Diya Nair', ticket: 'General', organization: 'KIIT', checkin: 'Checked in', sessionIds: ['s-2', 's-4'], eventId: 'e-1' },
+    { id: 'a-3', name: 'Rohan Verma', ticket: 'Student', organization: 'KIIT', checkin: 'Checked in', sessionIds: ['s-3', 's-5'], eventId: 'e-1' },
+    { id: 'a-4', name: 'Ishita Rao', ticket: 'General', organization: 'Freelancer', checkin: 'Not checked in', sessionIds: ['s-2'], eventId: 'e-1' },
+    { id: 'a-5', name: 'Kabir Singh', ticket: 'VIP', organization: 'Razorpay', checkin: 'Checked in', sessionIds: ['s-2', 's-3', 's-5'], eventId: 'e-1' },
+    { id: 'a-6', name: 'Ananya Das', ticket: 'Student', organization: 'KIIT', checkin: 'Not checked in', sessionIds: ['s-4'], eventId: 'e-1' },
+  ],
+  speakers: [
+    { id: 'sp-1', name: 'Abhigyan Rai', sessionId: 's-2', arrival: 'Confirmed', bio: 'Founder, ContentOra Media.', avRequirements: 'HDMI, clicker, mic', contact: 'abhigyan@avrel.in', confirmation: 'Confirmed' },
+    { id: 'sp-2', name: 'Priya Sharma', sessionId: 's-3', arrival: 'Confirmed', bio: 'VC, Antler India.', avRequirements: 'Panel mics x4', contact: 'priya@antler.in', confirmation: 'Confirmed' },
+    { id: 'sp-3', name: 'Rohit Das', sessionId: 's-4', arrival: 'Unconfirmed', bio: 'GTM advisor.', avRequirements: 'Whiteboard, markers', contact: '+91 98765 10003', confirmation: 'Pending' },
+  ],
+  sponsors: [
+    { id: 'spn-1', company: 'Zerodha', tier: 'Platinum', contact: 'partnerships@zerodha.com', booth: 'Confirmed', deliverables: ['Logo received', 'Booth confirmed', 'Stage mention'], payment: 'Paid' },
+    { id: 'spn-2', company: 'Razorpay', tier: 'Gold', contact: 'events@razorpay.com', booth: 'Confirmed', deliverables: ['Logo received', 'Booth confirmed'], payment: 'Paid' },
+    { id: 'spn-3', company: 'KIIT TBI', tier: 'Silver', contact: 'tbi@kiit.ac.in', booth: 'Pending', deliverables: ['Logo received'], payment: 'Pending' },
+  ],
+  risks: [
+    { id: 'r-1', name: 'Seminar Hall B capacity overflow', severity: 'Critical', category: 'Capacity', description: 'Seminar Hall B holds 120 but 200 attendees expected if Main Audi sessions move.', status: 'Open', source: SRC.AI },
+    { id: 'r-2', name: '3 volunteers unconfirmed', severity: 'Warning', category: 'People', description: 'Tanisha, Aarav and Kabir have not reconfirmed for moved sessions.', status: 'Open', source: SRC.AI },
+    { id: 'r-3', name: 'Speaker arrival unconfirmed', severity: 'Warning', category: 'People', description: 'Rohit Das (GTM workshop) has not confirmed arrival.', status: 'Open', source: SRC.VERIFIED },
+  ],
 };

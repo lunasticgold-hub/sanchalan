@@ -4,7 +4,7 @@
 import { MOCK } from './mock';
 import type { DbKey, ImpactPlan, ParsedChange, Records } from './types';
 
-const DB_KEYS: DbKey[] = ['venues', 'events', 'sessions', 'volunteers', 'tasks', 'comms', 'impactReports'];
+const DB_KEYS: DbKey[] = ['venues', 'events', 'sessions', 'volunteers', 'tasks', 'comms', 'impactReports', 'attendees', 'speakers', 'sponsors', 'risks'];
 
 async function post(path: string, body: unknown) {
   const res = await fetch(path, {
