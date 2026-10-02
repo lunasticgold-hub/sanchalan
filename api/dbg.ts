@@ -1,5 +1,5 @@
 // Debug: isolate which import crashes.
-export default async function handler(req: any, res: any) {
+export default async function handler(_req: any, res: any) {
   const out: Record<string, string> = {};
   try { await import('../src/config'); out.config = 'ok'; } catch (e: any) { out.config = 'FAIL: ' + (e?.message || e); }
   try { await import('./_schema'); out.schema = 'ok'; } catch (e: any) { out.schema = 'FAIL: ' + (e?.message || e); }
