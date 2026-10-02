@@ -5,6 +5,15 @@
 
 import type { ParsedChange } from '../src/lib/types';
 
+// Normalize raw input so parsers see a consistent shape regardless of how
+// the user typed it: collapse whitespace, and ensure terminal punctuation
+// (a missing trailing period otherwise makes parsing punctuation-sensitive).
+function normalizeInput(text: string): string {
+  let t = String(text ?? '').trim().replace(/\s+/g, ' ');
+  if (t && !/[.!?]$/.test(t)) t += '.';
+  return t;
+}
+
 function fallbackParse(text: string): ParsedChange {
   const t = text.trim();
 
@@ -48,7 +57,11 @@ async function geminiParse(text: string): Promise<ParsedChange | null> {
     const m = raw.match(/\{[\s\S]*\}/);
     if (!m) return null;
     const parsed = JSON.parse(m[0]);
-    if (parsed.type === 'venue_change' && parsed.params?.fromVenueName && parsed.params?.toVenueName) return parsed;
+    if (parsed.type === 'venue_change' && parsed.params?.fromVenueName && parsed.params?.toVenueName) {
+      parsed.params.fromVenueName = String(parsed.params.fromVenueName).trim();
+      parsed.params.toVenueName = String(parsed.params.toVenueName).trim().replace(/[.\s]+$/, '');
+      if (parsed.params.fromVenueName && parsed.params.toVenueName) return parsed;
+    }
     if (parsed.type === 'time_shift' && typeof parsed.params?.minutes === 'number') return parsed;
     return { type: 'none', params: {} };
   } catch {
@@ -58,10 +71,13 @@ async function geminiParse(text: string): Promise<ParsedChange | null> {
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const text = String(req.body?.text ?? '');
-  if (!text.trim()) return res.status(200).json({ type: 'none', params: {} });
+  const text = normalizeInput(req.body?.text);
+  if (!text) return res.status(200).json({ type: 'none', params: {} });
 
   const viaGemini = await geminiParse(text);
-  const out: ParsedChange = viaGemini ?? fallbackParse(text);
-  return res.status(200).json({ ...out, via: viaGemini ? 'gemini' : 'fallback' });
+  // If Gemini says 'none' (or errors), try the deterministic fallback before
+  // giving up — a parseable change should never fail because of the LLM.
+  const useGemini = viaGemini && viaGemini.type !== 'none';
+  const out: ParsedChange = useGemini ? viaGemini : fallbackParse(text);
+  return res.status(200).json({ ...out, via: useGemini ? 'gemini' : 'fallback' });
 }

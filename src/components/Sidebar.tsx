@@ -4,23 +4,39 @@ import { cx } from './ui';
 
 export type View =
   | 'overview'
-  | 'changes'
+  | 'live'
+  | 'preflight'
+  | 'inbox'
+  | 'attendees'
   | 'sessions'
-  | 'tasks'
-  | 'volunteers'
   | 'venues'
+  | 'volunteers'
+  | 'speakers'
+  | 'sponsors'
+  | 'tasks'
   | 'comms'
+  | 'risks'
+  | 'changes'
+  | 'simulate'
   | 'impacts'
   | 'notion';
 
 const NAV: { view: View; label: string }[] = [
   { view: 'overview', label: 'Overview' },
-  { view: 'changes', label: 'Changes' },
+  { view: 'live', label: 'Live Operations' },
+  { view: 'preflight', label: 'Pre-flight' },
+  { view: 'inbox', label: 'Inbox' },
+  { view: 'attendees', label: 'Attendees' },
   { view: 'sessions', label: 'Sessions' },
-  { view: 'tasks', label: 'Tasks' },
-  { view: 'volunteers', label: 'Volunteers' },
   { view: 'venues', label: 'Venues' },
+  { view: 'volunteers', label: 'Volunteers' },
+  { view: 'speakers', label: 'Speakers' },
+  { view: 'sponsors', label: 'Sponsors' },
+  { view: 'tasks', label: 'Tasks' },
   { view: 'comms', label: 'Communications' },
+  { view: 'risks', label: 'Risks' },
+  { view: 'changes', label: 'Changes' },
+  { view: 'simulate', label: 'Simulate' },
   { view: 'impacts', label: 'Impact Reports' },
 ];
 

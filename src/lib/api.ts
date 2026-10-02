@@ -39,13 +39,17 @@ export async function parseUpdate(text: string): Promise<ParsedChange & { via?: 
   try {
     return await post('/api/parse', { text });
   } catch {
-    // Local regex fallback so the demo never stalls
-    const tm = text.match(/(delay|push(?:\s+back)?|postpone|prepone|bring\s+forward)\D{0,25}?(\d+)\s*(min(?:ute)?s?|hr?s?|hours?)/i);
+    // Local regex fallback so the demo never stalls.
+    // Normalize first: collapse whitespace and ensure terminal punctuation,
+    // so "…to Seminar Hall B" parses the same as "…to Seminar Hall B."
+    let t = text.trim().replace(/\s+/g, ' ');
+    if (t && !/[.!?]$/.test(t)) t += '.';
+    const tm = t.match(/(delay|push(?:\s+back)?|postpone|prepone|bring\s+forward)\D{0,25}?(\d+)\s*(min(?:ute)?s?|hr?s?|hours?)/i);
     if (tm) {
       const n = parseInt(tm[2], 10) * (/hr|hour/i.test(tm[3]) ? 60 : 1);
       return { type: 'time_shift', params: { minutes: /prepone|bring\s+forward/i.test(tm[1]) ? -n : n }, via: 'local' };
     }
-    const vm = text.match(/(?:move|shift|relocate|change)\s+(?:all\s+sessions\s+(?:from\s+)?|the\s+)?(.+?)\s+(?:to|into)\s+([A-Za-z0-9 .'\-]+?)(?:\.|$)/i);
+    const vm = t.match(/(?:move|shift|relocate|change)\s+(?:all\s+sessions\s+(?:from\s+)?|the\s+)?(.+?)\s+(?:to|into)\s+([A-Za-z0-9 .'\-]+?)(?:\.|$)/i);
     if (vm) return { type: 'venue_change', params: { fromVenueName: vm[1].trim(), toVenueName: vm[2].trim() }, via: 'local' };
     return { type: 'none', params: {}, via: 'local' };
   }
