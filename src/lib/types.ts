@@ -68,3 +68,22 @@ export type ParsedChange =
   | { type: 'venue_change'; params: { fromVenueName: string; toVenueName: string } }
   | { type: 'time_shift'; params: { minutes: number } }
   | { type: 'none'; params: Record<string, never> };
+
+// A submitted operational change moving through the approval pipeline.
+export type ChangeStatus = 'draft' | 'analyzed' | 'applying' | 'applied' | 'cancelled';
+
+export interface ChangeRequest {
+  id: string;
+  input: string;
+  parsed: (ParsedChange & { via?: string }) | null;
+  plan: ImpactPlan | null;
+  status: ChangeStatus;
+  createdAt: string; // ISO
+  requestedBy: string;
+  approvedBy?: string;
+  appliedAt?: string;
+  applyResult?: { updated: number; created: { db: string; url: string }[] };
+  applyError?: string;
+  cancelNote?: string;
+  riskAcknowledged?: boolean;
+}
