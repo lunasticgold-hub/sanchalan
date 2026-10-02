@@ -372,8 +372,18 @@ export default function App() {
               </div>
 
               {parsed && (
-                <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-                  parsed: {JSON.stringify(parsed)}
+                <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                  <span className="font-semibold">Parsed:</span>{' '}
+                  {parsed.type === 'venue_change' && (
+                    <>move sessions from <b>{parsed.params.fromVenueName}</b> → <b>{parsed.params.toVenueName}</b></>
+                  )}
+                  {parsed.type === 'time_shift' && (
+                    <>shift all sessions by <b>{parsed.params.minutes} min</b></>
+                  )}
+                  {parsed.type === 'none' && (
+                    <>couldn't parse that update — try "move … to …" or "delay … by N hours"</>
+                  )}
+                  {parsed.via && <span className="ml-2 text-slate-400">via {parsed.via === 'local' ? 'local parser' : parsed.via}</span>}
                 </div>
               )}
 
