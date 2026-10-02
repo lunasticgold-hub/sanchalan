@@ -115,7 +115,7 @@ export interface GeneralChangeParams {
 }
 
 // A submitted operational change moving through the approval pipeline.
-export type ChangeStatus = 'draft' | 'analyzed' | 'applying' | 'applied' | 'cancelled';
+export type ChangeStatus = 'draft' | 'analyzed' | 'applying' | 'applied' | 'cancelled' | 'undone';
 
 export interface ChangeRequest {
   id: string;
@@ -130,5 +130,11 @@ export interface ChangeRequest {
   applyResult?: { updated: number; created: { db: string; url: string }[] };
   applyError?: string;
   cancelNote?: string;
+  // Rollback data captured at apply time for Undo
+  rollback?: {
+    updates: { db: string; pageId: string; props: Record<string, any> }[];
+    createdIds: { db: string; pageId: string }[];
+  };
+  undoneAt?: string;
   riskAcknowledged?: boolean;
 }

@@ -256,7 +256,23 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
   const doApprove = async () => {
     if (!active?.plan) return;
     const id = active.id;
-    patchChange(id, { status: 'applying', approvedBy: OPERATOR, riskAcknowledged: p0Count(active.plan) > 0 });
+    // Capture rollback data: previous values for all pages being updated
+    const rollbackUpdates: { db: string; pageId: string; props: Record<string, any> }[] = [];
+    for (const u of active.plan.updates) {
+      if (u.db === 'sessions') {
+        const s = records.sessions.find((x) => x.id === u.pageId);
+        if (s) rollbackUpdates.push({ db: 'sessions', pageId: u.pageId, props: { Venue: { rel: s.venueId } } });
+      } else if (u.db === 'tasks') {
+        const t = records.tasks.find((x) => x.id === u.pageId);
+        if (t) rollbackUpdates.push({ db: 'tasks', pageId: u.pageId, props: { Title: t.title, Detail: t.detail } });
+      }
+    }
+    patchChange(id, {
+      status: 'applying',
+      approvedBy: OPERATOR,
+      riskAcknowledged: p0Count(active.plan) > 0,
+      rollback: { updates: rollbackUpdates, createdIds: [] },
+    });
     setApplyError('');
     setExecLog(['Validating change plan…']);
     try {
@@ -271,10 +287,13 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
       if (plan.newImpactReports.length) log.push('Created impact report');
       log.push('Notion synced');
       setExecLog(log);
+      // Capture created page IDs for undo
+      const createdIds = (res.created ?? []).filter((c: any) => c.id).map((c: any) => ({ db: c.db, pageId: c.id }));
       patchChange(id, {
         status: 'applied',
         appliedAt: new Date().toISOString(),
         applyResult: res,
+        rollback: { updates: rollbackUpdates, createdIds },
       });
       await refreshRecords();
     } catch (e: any) {
@@ -284,6 +303,41 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
           : `Apply failed: ${e?.message ?? 'unknown error'}`;
       setApplyError(msg);
       patchChange(id, { status: 'analyzed', applyError: msg });
+    }
+  };
+
+  const doDelete = () => {
+    if (!active) return;
+    // Only the requester or admin (OPERATOR) can delete
+    if (active.requestedBy !== OPERATOR) return;
+    setChanges((cs) => cs.filter((c) => c.id !== active.id));
+    setActiveId(null);
+  };
+
+  const doUndo = async () => {
+    if (!active?.rollback || active.status !== 'applied') return;
+    if (active.requestedBy !== OPERATOR) return;
+    const id = active.id;
+    patchChange(id, { status: 'applying' });
+    setApplyError('');
+    setExecLog(['Reverting applied changes…']);
+    try {
+      // 1. Revert updated pages to previous values
+      const reverseUpdates = active.rollback.updates.map((u) => ({
+        db: u.db as any,
+        pageId: u.pageId,
+        props: u.props,
+      }));
+      // 2. Archive created pages
+      const archive = active.rollback.createdIds.map((c) => ({ pageId: c.pageId }));
+      await applyPlan({ updates: reverseUpdates, newTasks: [], newComms: [], newImpactReports: [], risks: [], summary: '' } as any, archive);
+      setExecLog(['Reverted updated records', `Archived ${archive.length} created record(s)`, 'Notion synced']);
+      patchChange(id, { status: 'undone', undoneAt: new Date().toISOString() });
+      await refreshRecords();
+    } catch (e: any) {
+      const msg = `Undo failed: ${e?.message ?? 'unknown error'}`;
+      setApplyError(msg);
+      patchChange(id, { status: 'applied', applyError: msg });
     }
   };
 
@@ -551,6 +605,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </div>
             <div className="flex items-center gap-2">
               <Btn onClick={doCancel} disabled={applying}>Cancel</Btn>
+              <Btn variant="ghost" onClick={doDelete} disabled={applying} className="text-red-700 hover:text-red-800">Delete</Btn>
               {p0s.length > 0 && (
                 <Btn onClick={doResolveRiskFirst} disabled={applying}>Resolve risk first</Btn>
               )}
@@ -621,9 +676,13 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </li>
           ))}
         </ul>
-        <div className="mt-4">
+        <div className="mt-4 flex gap-2">
           <Btn variant="primary" onClick={() => onViewImpact(c.id)}>View impact report</Btn>
+          {c.rollback && (c.rollback.updates.length > 0 || c.rollback.createdIds.length > 0) && (
+            <Btn variant="ghost" onClick={doUndo} className="text-red-700 hover:text-red-800">Undo change</Btn>
+          )}
         </div>
+        <p className="mt-2 text-[12px] text-gray-500">Undo reverts the Notion updates and archives created records. The requester or admin can undo.</p>
       </div>
     </div>
   );
@@ -669,6 +728,14 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
       {active?.status === 'analyzed' && renderAnalysis(active)}
       {active?.status === 'applying' && renderExecuting()}
       {active?.status === 'applied' && renderDone(active)}
+      {active?.status === 'undone' && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-4">
+          <div className="text-[15px] font-semibold text-gray-900">Change undone</div>
+          <p className="mt-1 text-[13px] text-gray-600">
+            Reverted {fmtDateTime(active.undoneAt ?? '')}. Notion records restored to previous values; created records archived.
+          </p>
+        </div>
+      )}
 
       {!active && !showNew && (
         <section>
@@ -683,7 +750,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
               {history.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => (c.status === 'analyzed' || c.status === 'applied' ? setActiveId(c.id) : null)}
+                  onClick={() => (c.status === 'analyzed' || c.status === 'applied' || c.status === 'undone' ? setActiveId(c.id) : null)}
                   className="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 text-left last:border-0 hover:bg-gray-50"
                 >
                   <div className="min-w-0">
@@ -694,10 +761,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
                     tone={
                       c.status === 'applied' ? 'green'
                       : c.status === 'analyzed' ? 'amber'
-                      : c.status === 'cancelled' ? 'gray' : 'blue'
+                      : c.status === 'cancelled' ? 'gray'
+                      : c.status === 'undone' ? 'gray' : 'blue'
                     }
                   >
-                    {c.status === 'analyzed' ? 'Awaiting approval' : c.status}
+                    {c.status === 'analyzed' ? 'Awaiting approval' : c.status === 'undone' ? 'Undone' : c.status}
                   </Badge>
                 </button>
               ))}
@@ -706,7 +774,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
         </section>
       )}
 
-      {active && (active.status === 'analyzed' || active.status === 'applied') && (
+      {active && (active.status === 'analyzed' || active.status === 'applied' || active.status === 'undone') && (
         <Btn variant="ghost" onClick={() => setActiveId(null)}>← Back to changes</Btn>
       )}
     </div>

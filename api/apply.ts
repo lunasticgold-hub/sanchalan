@@ -114,7 +114,7 @@ export default async function handler(req: any, res: any) {
   const plan = req.body?.plan as any;
   if (!plan) return res.status(400).json({ error: 'Missing plan' });
 
-  const created: { db: string; url: string }[] = [];
+  const created: { db: string; url: string; id?: string }[] = [];
   let updated = 0;
 
   try {
@@ -135,9 +135,16 @@ export default async function handler(req: any, res: any) {
         parent: { database_id: DB_IDS[c.db] },
         properties: props,
       });
-      created.push({ db: c.db, url: page.url ?? '' });
+      created.push({ db: c.db, url: page.url ?? '', id: page.id ?? '' });
     }
-    return res.status(200).json({ updated, created });
+    // Optional archive: { archive: [{ pageId }] } — for undo/rollback
+    const archived: string[] = [];
+    for (const a of (req.body?.archive ?? [])) {
+      if (!a?.pageId) continue;
+      await nfetch(token, `/pages/${a.pageId}`, 'PATCH', { archived: true });
+      archived.push(a.pageId);
+    }
+    return res.status(200).json({ updated, created, archived });
   } catch (e: any) {
     return res.status(502).json({ error: `Notion write failed: ${e?.message ?? e}`, updated, created });
   }
