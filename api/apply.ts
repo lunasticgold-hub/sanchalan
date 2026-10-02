@@ -3,10 +3,10 @@
 // impact reports) with Source = "🤖 AI-generated" provenance.
 // 501 when no token is configured.
 
-import { Client } from '@notionhq/client';
 import { DB_IDS, SRC } from '../src/config';
 import type { DbKey, ImpactPlan } from '../src/lib/types';
 import { draftToNotionProps, toNotionProps } from './_schema';
+import { updatePage, createPage } from './_notion';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -16,14 +16,13 @@ export default async function handler(req: any, res: any) {
   const plan = req.body?.plan as ImpactPlan;
   if (!plan) return res.status(400).json({ error: 'Missing plan' });
 
-  const notion = new Client({ auth: token });
   const created: { db: DbKey; url: string }[] = [];
   let updated = 0;
 
   try {
     for (const u of plan.updates) {
       if (!DB_IDS[u.db]) continue;
-      await notion.pages.update({ page_id: u.pageId, properties: toNotionProps(u.db, u.props) as any });
+      await updatePage(token, u.pageId, toNotionProps(u.db, u.props));
       updated++;
     }
     const creates: { db: DbKey; draft: Record<string, any> }[] = [
@@ -34,10 +33,7 @@ export default async function handler(req: any, res: any) {
     for (const c of creates) {
       if (!DB_IDS[c.db]) continue;
       const props = draftToNotionProps(c.db, { ...c.draft, source: c.draft.source || SRC.AI });
-      const page: any = await notion.pages.create({
-        parent: { database_id: DB_IDS[c.db] },
-        properties: props as any,
-      });
+      const page: any = await createPage(token, DB_IDS[c.db], props);
       created.push({ db: c.db, url: page.url ?? '' });
     }
     return res.status(200).json({ updated, created });
