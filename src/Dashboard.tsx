@@ -160,8 +160,13 @@ export default function Dashboard() {
   }, [records, customEvents]);
 
   useEffect(() => {
-    if (!activeEventId && events.length > 0) setActiveEventId(events[0].id);
-  }, [events, activeEventId]);
+    // Don't auto-select the BBSR demo event. User picks their own event or creates one.
+    if (activeEventId) return;
+    if (customEvents.length > 0) {
+      setActiveEventId(customEvents[0].id);
+    }
+    // Otherwise stay empty — welcome screen prompts to create first event
+  }, [customEvents, activeEventId]);
 
   const load = async () => {
     setSyncing(true);
@@ -216,6 +221,56 @@ export default function Dashboard() {
     return (
       <div className="flex h-screen items-center justify-center bg-[#fafafa] text-[13px] text-gray-500">
         Loading workspace…
+      </div>
+    );
+  }
+
+  // Welcome screen: no event selected yet (new user hasn't created one)
+  if (!activeEventId) {
+    const demoEvent = (records.events ?? [])[0];
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
+        <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900">
+            <div className="h-5 w-5 rounded-full border-2 border-white" />
+          </div>
+          <h1 className="text-[22px] font-bold tracking-tight text-gray-900">Welcome to Sanchalan</h1>
+          <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-gray-500">
+            Create your first event to start running it — or connect your Notion workspace and pull your real data.
+          </p>
+          <button
+            onClick={() => setShowAddEvent(true)}
+            className="mt-6 w-full rounded-lg bg-gray-900 py-3 text-[15px] font-semibold text-white hover:bg-gray-800"
+          >
+            + Create your first event
+          </button>
+          {demoEvent && (
+            <button
+              onClick={() => { setActiveEventId(demoEvent.id); setView('overview'); }}
+              className="mt-3 w-full rounded-lg border border-gray-200 py-2.5 text-[14px] font-medium text-gray-600 hover:bg-gray-50"
+            >
+              Try the demo event instead
+            </button>
+          )}
+          <p className="mt-4 text-[12px] text-gray-400">Your data stays in your Notion. Nothing is shared.</p>
+        </div>
+        {showAddEvent && (
+          <AddEventWizard
+            onClose={() => setShowAddEvent(false)}
+            onAdd={(evt) => {
+              const id = `custom-${Date.now()}`;
+              const full = { id, ...evt };
+              setCustomEvents((cs) => [...cs, full]);
+              try {
+                localStorage.setItem('sanchalan_custom_events', JSON.stringify([...customEvents, full]));
+              } catch {}
+              setActiveEventId(id);
+              setShowAddEvent(false);
+              setView('overview');
+              return full;
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -366,6 +421,7 @@ export default function Dashboard() {
             setActiveEventId(id);
             setShowAddEvent(false);
             setView('overview');
+            return full;
           }}
         />
       )}
@@ -382,10 +438,40 @@ interface NewEventData {
   description: string;
 }
 
-function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: NewEventData) => void }) {
+function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: NewEventData) => { id: string } | void }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<NewEventData>({ name: '', date: '', location: '', expectedAttendees: '', organizer: '', description: '' });
   const [token, setToken] = useState('');
+  const [discovered, setDiscovered] = useState<{ id: string; name: string }[] | null>(null);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverErr, setDiscoverErr] = useState('');
+
+  const discoverDatabases = async () => {
+    if (!token.trim()) return;
+    setDiscovering(true);
+    setDiscoverErr('');
+    try {
+      const resp = await fetch('/api/discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token.trim() }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error ?? 'Discovery failed');
+      setDiscovered(data.databases ?? []);
+    } catch (e: any) {
+      setDiscoverErr(e.message ?? 'Could not reach Notion. Check the token and try again.');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  // Auto-match discovered databases to expected names
+  const matchDb = (expected: string) => {
+    if (!discovered) return null;
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+    return discovered.find((d) => norm(d.name).includes(norm(expected)) || norm(expected).includes(norm(d.name))) ?? null;
+  };
   const set = (k: keyof NewEventData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -442,14 +528,38 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
 
         {step === 3 && (
           <div className="space-y-3">
-            <div className="text-[13px] font-semibold text-gray-800">Databases Sanchalan needs</div>
-            <p className="text-[13px] text-gray-600">Your Notion workspace should have these 11 databases. Sanchalan maps to them by name:</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {['Events', 'Venues', 'Sessions', 'Volunteers', 'Tasks', 'Communications', 'Impact Reports', 'Attendees', 'Speakers', 'Sponsors', 'Risks'].map((d) => (
-                <div key={d} className="rounded-md bg-gray-50 px-3 py-1.5 text-[12px] font-medium text-gray-700">{d}</div>
-              ))}
-            </div>
-            <p className="text-[12px] text-gray-500">Don't have them yet? Duplicate our template workspace, or let Sanchalan work with whatever databases you share — it adapts to what's there.</p>
+            <div className="text-[13px] font-semibold text-gray-800">Connect your Notion databases</div>
+            <p className="text-[13px] text-gray-600">Sanchalan found these databases in your workspace. Matched ones will feed your event:</p>
+            {!discovered && !discovering && (
+              <button
+                onClick={discoverDatabases}
+                className="rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800"
+              >
+                Discover databases
+              </button>
+            )}
+            {discovering && <p className="text-[13px] text-gray-500">Scanning your Notion workspace…</p>}
+            {discoverErr && <p className="text-[13px] text-red-600">{discoverErr}</p>}
+            {discovered && (
+              <div className="space-y-1.5">
+                {['Events', 'Venues', 'Sessions', 'Volunteers', 'Tasks', 'Communications', 'Impact Reports', 'Attendees', 'Speakers', 'Sponsors', 'Risks'].map((expected) => {
+                  const m = matchDb(expected);
+                  return (
+                    <div key={expected} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5">
+                      <span className="text-[12px] font-medium text-gray-700">{expected}</span>
+                      {m ? (
+                        <span className="text-[12px] text-green-700">✓ {m.name}</span>
+                      ) : (
+                        <span className="text-[12px] text-gray-400">not found</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {discovered && discovered.length === 0 && (
+              <p className="text-[13px] text-amber-700">No databases found. Make sure you've shared them with your integration (Notion → ••• → Add connections).</p>
+            )}
           </div>
         )}
 
@@ -488,7 +598,18 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
                   if (token.trim()) {
                     try { localStorage.setItem('sanchalan_notion_token', token.trim()); } catch {}
                   }
-                  onAdd(form);
+                  const newEvent = onAdd(form);
+                  // Save Notion mapping for this custom event
+                  if (newEvent?.id && discovered && discovered.length > 0) {
+                    const mapping: Record<string, string> = {};
+                    ['Events', 'Venues', 'Sessions', 'Volunteers', 'Tasks', 'Communications', 'Impact Reports', 'Attendees', 'Speakers', 'Sponsors', 'Risks'].forEach((expected) => {
+                      const m = matchDb(expected);
+                      if (m) mapping[expected.toLowerCase().replace(/ /g, '')] = m.id;
+                    });
+                    try {
+                      localStorage.setItem(`sanchalan_notion_map_${newEvent.id}`, JSON.stringify({ token: token.trim(), databases: mapping }));
+                    } catch {}
+                  }
                 }}
                 className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white"
               >
