@@ -41,7 +41,6 @@ export default async function handler(req: any, res: any) {
 
   try {
     const databases: { id: string; name: string }[] = [];
-    let cursor: string | undefined;
 
     // Walk child blocks recursively (1 level deep is usually enough, do 2 for safety)
     const scanBlocks = async (blockId: string, depth: number) => {
