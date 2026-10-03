@@ -30,7 +30,7 @@ export default function Overview({
   changes: ChangeRequest[];
   setView: (v: View) => void;
   onReview: (id: string) => void;
-  activeEvent?: { id: string; name: string; date?: string; location?: string; organizer?: string } | null;
+  activeEvent?: { id: string; name: string; date?: string; location?: string; organizer?: string; expectedAttendance?: number } | null;
 }) {
   const notionEvent = records.events[0];
   const event = activeEvent && activeEvent.id.startsWith('custom-')
@@ -80,7 +80,7 @@ export default function Overview({
           </div>
           <div className="grid grid-cols-2 gap-px bg-gray-100 md:grid-cols-4">
             {[
-              ['Attendees (expected)', String(EST_ATTENDEES), undefined],
+              ['Attendees', String(records.attendees.length), activeEvent?.id.startsWith('custom-') ? 'registered' : `expected ${activeEvent?.expectedAttendance ?? EST_ATTENDEES}`],
               ['Sessions', String(records.sessions.length), undefined],
               ['Volunteers', String(records.volunteers.length), undefined],
               ['Tasks', String(records.tasks.length), `${openTasks} open`],
