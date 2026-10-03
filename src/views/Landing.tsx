@@ -1,11 +1,76 @@
 // Sanchalan landing — refined SaaS marketing site.
 
+import { useEffect, useRef, useState } from 'react';
 import Logo from '../components/Logo';
 
+/* Typing effect for the mockup's change input */
+function useTypewriter(phrases: string[], speed = 55, pause = 2200) {
+  const [text, setText] = useState('');
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    let pi = 0, ci = 0, timer: ReturnType<typeof setTimeout>;
+    let cancelled = false;
+    const tick = () => {
+      if (cancelled) return;
+      const phrase = phrases[pi];
+      if (!done) {
+        ci++;
+        setText(phrase.slice(0, ci));
+        if (ci >= phrase.length) {
+          setDone(true);
+          timer = setTimeout(tick, pause);
+          return;
+        }
+        timer = setTimeout(tick, speed + Math.random() * 40);
+      } else {
+        // hold, then restart cycle
+        setDone(false);
+        setText('');
+        ci = 0;
+        pi = (pi + 1) % phrases.length;
+        timer = setTimeout(tick, 600);
+      }
+    };
+    timer = setTimeout(tick, 1200);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
+  return { text, done };
+}
+
+/* Count-up for stat numbers */
+function CountUp({ to, suffix = '' }: { to: number; suffix?: string }) {
+  const [n, setN] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      obs.disconnect();
+      const t0 = performance.now(), dur = 1400;
+      const step = (t: number) => {
+        const p = Math.min(1, (t - t0) / dur);
+        setN(Math.round(to * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, { threshold: 0.4 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [to]);
+  return <div ref={ref} className="text-[32px] font-bold tabular-nums tracking-tight">{n}{suffix}</div>;
+}
+
 function DashboardMock() {
+  const { text, done } = useTypewriter([
+    'Move the keynote to the Auditorium…',
+    'What if 500 people show up?…',
+    'Reassign volunteers for Hall B…',
+  ]);
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.18)]">
-      <div className="flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-4 py-3">
+    <div className="mockup-float overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.18)]">
+      <div className="relative flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-4 py-3 overflow-hidden">
+        <div className="sweep-bar absolute inset-y-0 w-1/3 bg-white/60 blur-md" />
         <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
         <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
         <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
@@ -31,36 +96,35 @@ function DashboardMock() {
           </div>
         </div>
         <div className="flex-1 p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-[15px] font-bold text-gray-900">Move Keynote to Auditorium</div>
-              <div className="mt-1 text-[12px] text-gray-500">Blast radius computed · 8 records affected</div>
+          {/* Typing input */}
+          <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50/70 px-3.5 py-2.5">
+            <span className="text-[12.5px] text-gray-700">{text}</span>
+            <span className="typing-caret ml-0.5 inline-block h-3.5 w-[2px] translate-y-[2px] bg-gray-900" />
+          </div>
+          <div className={`transition-all duration-700 ${done ? 'opacity-100 translate-y-0' : 'opacity-40 translate-y-1'}`}>
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-[15px] font-bold text-gray-900">Move Keynote to Auditorium</div>
+                <div className="mt-1 text-[12px] text-gray-500">Blast radius computed · 8 records affected</div>
+              </div>
+              <div className="p0-pulse rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800">P0</div>
             </div>
-            <div className="rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800">P0</div>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-2.5">
-            {[['2', 'sessions'], ['4', 'tasks'], ['3', 'volunteers']].map(([n, l]) => (
-              <div key={l} className="rounded-lg border border-gray-100 bg-gray-50/70 p-3">
-                <div className="text-[20px] font-bold tabular-nums text-gray-900">{n}</div>
-                <div className="text-[10.5px] text-gray-500">{l}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-            <div className="text-[11px] font-semibold text-amber-900">Capacity risk</div>
-            <div className="mt-0.5 text-[11px] leading-relaxed text-amber-700">Auditorium holds 300 · 200 expected + 80 waitlist = 280. Tight but feasible.</div>
-          </div>
-          <div className="mt-3 space-y-1.5">
-            {['Keynote session → Auditorium', 'Reassign 3 volunteers', 'Draft attendee announcement'].map((t) => (
-              <div key={t} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2.5">
-                <span className="text-[12px] font-medium text-gray-700">{t}</span>
-                <span className="text-[10px] font-semibold text-green-700">Ready</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex gap-2">
-            <div className="rounded-lg bg-gray-900 px-4 py-2 text-[12px] font-semibold text-white shadow-sm">Approve & apply</div>
-            <div className="rounded-lg border border-gray-200 px-4 py-2 text-[12px] font-medium text-gray-500">Discard</div>
+            <div className="mt-4 grid grid-cols-3 gap-2.5">
+              {[['2', 'sessions'], ['4', 'tasks'], ['3', 'volunteers']].map(([n, l]) => (
+                <div key={l} className="rounded-lg border border-gray-100 bg-gray-50/70 p-3">
+                  <div className="text-[20px] font-bold tabular-nums text-gray-900">{n}</div>
+                  <div className="text-[10.5px] text-gray-500">{l}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+              <div className="text-[11px] font-semibold text-amber-900">Capacity risk</div>
+              <div className="mt-0.5 text-[11px] leading-relaxed text-amber-700">Auditorium holds 300 · 200 expected + 80 waitlist = 280. Tight but feasible.</div>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <div className="rounded-lg bg-gray-900 px-4 py-2 text-[12px] font-semibold text-white shadow-sm">Approve & apply</div>
+              <div className="rounded-lg border border-gray-200 px-4 py-2 text-[12px] font-medium text-gray-500">Discard</div>
+            </div>
           </div>
         </div>
       </div>
@@ -106,21 +170,21 @@ export default function Landing() {
       <section className="px-6 pb-24 pt-40">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <a href="/changelog" className="group inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white py-1.5 pl-2 pr-4 text-[12.5px] font-medium text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:shadow">
+            <a href="/changelog" className="hero-anim hero-d1 group inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white py-1.5 pl-2 pr-4 text-[12.5px] font-medium text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:shadow">
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-800">NEW</span>
               Per-event workspaces & one-click undo
               <span className="text-gray-400 transition-transform group-hover:translate-x-0.5">→</span>
             </a>
-            <h1 className="mt-8 text-[46px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[68px]">
+            <h1 className="hero-anim hero-d2 mt-8 text-[46px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[68px]">
               Notion stores the event.
               <br />
               <span className="text-gray-400">Sanchalan runs it.</span>
             </h1>
-            <p className="mx-auto mt-7 max-w-xl text-[17.5px] leading-[1.65] text-gray-500">
+            <p className="hero-anim hero-d3 mx-auto mt-7 max-w-xl text-[17.5px] leading-[1.65] text-gray-500">
               The operational layer for events on Notion. Describe a change in plain English —
               see the blast radius, catch the risks, and apply it with your approval. Nothing else moves.
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="hero-anim hero-d4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a href="/app" className="w-full rounded-xl bg-gray-900 px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.3)] transition-all hover:bg-gray-800 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.35)] sm:w-auto">
                 Start free
               </a>
@@ -128,9 +192,9 @@ export default function Landing() {
                 Explore features
               </a>
             </div>
-            <p className="mt-5 text-[12.5px] text-gray-400">Free during beta · No credit card · Your data stays in Notion</p>
+            <p className="hero-anim hero-d5 mt-5 text-[12.5px] text-gray-400">Free during beta · No credit card · Your data stays in Notion</p>
           </div>
-          <div className="mx-auto mt-16 max-w-4xl">
+          <div className="hero-anim hero-d6 mx-auto mt-16 max-w-4xl">
             <DashboardMock />
             <p className="mt-4 text-center text-[12px] text-gray-400">A real change proposal — blast radius, P0 risk, and approval gate</p>
           </div>
@@ -141,13 +205,13 @@ export default function Landing() {
         <div className="mx-auto max-w-5xl">
           <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
             {[
-              ['11', 'Notion databases connected'],
-              ['200+', 'attendees managed live'],
-              ['5', 'seconds to blast radius'],
-              ['0', 'unapproved writes, ever'],
-            ].map(([n, l]) => (
-              <div key={l}>
-                <div className="text-[32px] font-bold tabular-nums tracking-tight">{n}</div>
+              [11, '', 'Notion databases connected'],
+              [200, '+', 'attendees managed live'],
+              [5, '', 'seconds to blast radius'],
+              [0, '', 'unapproved writes, ever'],
+            ].map(([n, suffix, l]) => (
+              <div key={l as string}>
+                <CountUp to={n as number} suffix={suffix as string} />
                 <div className="mt-1 text-[12.5px] text-gray-500">{l}</div>
               </div>
             ))}
