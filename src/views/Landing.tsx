@@ -7,7 +7,26 @@ import { supabase, supabaseConfigured } from '../lib/supabase';
 
 /* ---------- Hooks ---------- */
 function useLoggedIn() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  // Synchronous initial check from localStorage (Supabase stores session here).
+  // Avoids flashing "Sign in" before the async check completes.
+  const [loggedIn, setLoggedIn] = useState(() => {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i) ?? '';
+        if (k.startsWith('sb-') && k.endsWith('-auth-token')) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            // Check expiry: expires_at is in seconds
+            if (parsed?.access_token && (!parsed.expires_at || parsed.expires_at * 1000 > Date.now())) {
+              return true;
+            }
+          }
+        }
+      }
+    } catch {}
+    return false;
+  });
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return;
     supabase.auth.getSession().then(({ data }) => {
