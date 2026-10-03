@@ -23,26 +23,6 @@ import Logo from './components/Logo';
 import { supabase, supabaseConfigured } from './lib/supabase';
 import { emptyRecords, isCustomEvent, loadCustomRecords, saveCustomRecords } from './lib/eventData';
 
-const VIEW_TITLES: Record<View, string> = {
-  overview: 'Overview',
-  live: 'Live Operations',
-  preflight: 'Pre-flight',
-  inbox: 'Inbox',
-  attendees: 'Attendees',
-  sessions: 'Sessions',
-  venues: 'Venues',
-  volunteers: 'Volunteers',
-  speakers: 'Speakers',
-  sponsors: 'Sponsors',
-  tasks: 'Tasks',
-  comms: 'Communications',
-  risks: 'Risks',
-  changes: 'Changes',
-  simulate: 'Simulate',
-  impacts: 'Impact Reports',
-  notion: 'Notion',
-};
-
 const OPERATOR = 'Abhigyan Rai';
 const uid = () => Math.random().toString(36).slice(2, 10);
 
