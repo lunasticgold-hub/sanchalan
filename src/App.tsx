@@ -20,6 +20,7 @@ import { cx } from './components/ui';
 import { Linkify } from './components/ui';
 import Auth from './components/Auth';
 import { supabase, supabaseConfigured } from './lib/supabase';
+import { emptyRecords, isCustomEvent, loadCustomRecords, saveCustomRecords } from './lib/eventData';
 
 const VIEW_TITLES: Record<View, string> = {
   overview: 'Overview',
@@ -126,6 +127,39 @@ export default function App() {
   });
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [authChecked, setAuthChecked] = useState(!supabaseConfigured);
+  const [customData, setCustomData] = useState<Record<string, Records>>({});
+
+  // Active records: Notion data for demo event, local data for custom events
+  const activeRecords: Records = (() => {
+    if (!records) return emptyRecords();
+    if (!activeEventId || !isCustomEvent(activeEventId)) return records;
+    return customData[activeEventId] ?? loadCustomRecords(activeEventId);
+  })();
+
+  const updateCustomData = (_updater: (r: Records) => Records) => {
+    // Used by entity views to add records to custom events
+    if (!isCustomEvent(activeEventId)) return;
+    setCustomData((prev) => {
+      const current = prev[activeEventId] ?? loadCustomRecords(activeEventId);
+      const next = _updater(current);
+      saveCustomRecords(activeEventId, next);
+      return { ...prev, [activeEventId]: next };
+    });
+  };
+  // Exposed via props to entity views (see AddRecordButton in ui.tsx)
+  const isCustomActive = isCustomEvent(activeEventId);
+  const makeAdd = (kind: 'sessions' | 'attendees' | 'volunteers' | 'tasks' | 'venues' | 'speakers' | 'sponsors') =>
+    (vals: Record<string, string>) => {
+      const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      updateCustomData((r) => {
+        const next = { ...r };
+        if (kind === 'sessions') next.sessions = [...r.sessions, { id, name: vals.name, eventId: activeEventId, venueId: '', starts: vals.starts ?? '', ends: vals.ends ?? '', speaker: '', format: '', status: 'Scheduled' }];
+        if (kind === 'volunteers') next.volunteers = [...r.volunteers, { id, name: vals.name, role: vals.role ?? '', phone: '', skills: [], shift: vals.shift ?? 'Full-day', sessionIds: [] }];
+        if (kind === 'tasks') next.tasks = [...r.tasks, { id, title: vals.name, ownerId: '', sessionId: '', due: '', status: 'Todo', priority: 'P2', source: 'human', detail: vals.detail ?? '' }];
+        if (kind === 'venues') next.venues = [...r.venues, { id, name: vals.name, capacity: parseInt(vals.capacity ?? '0', 10) || 0, location: vals.location ?? '', facilities: [] }];
+        return next;
+      });
+    };
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return;
@@ -177,13 +211,13 @@ export default function App() {
   }, []);
 
   const maps: Maps | null = useMemo(() => {
-    if (!records) return null;
+    if (!activeRecords) return null;
     return {
-      venue: new Map(records.venues.map((v) => [v.id, v.name])),
-      session: new Map(records.sessions.map((s) => [s.id, s.name])),
-      vol: new Map(records.volunteers.map((v) => [v.id, v.name])),
+      venue: new Map(activeRecords.venues.map((v) => [v.id, v.name])),
+      session: new Map(activeRecords.sessions.map((s) => [s.id, s.name])),
+      vol: new Map(activeRecords.volunteers.map((v) => [v.id, v.name])),
     };
-  }, [records]);
+  }, [activeRecords]);
 
   if (!authChecked) {
     return (
@@ -275,24 +309,24 @@ export default function App() {
 
           {view === 'overview' && (
             <Overview
-              records={records}
+              records={activeRecords}
               changes={changes}
               setView={setView}
               onReview={reviewChange}
               activeEvent={events.find((e) => e.id === activeEventId) ?? null}
             />
           )}
-          {view === 'live' && <Live records={records} changes={changes} />}
-          {view === 'preflight' && <Preflight records={records} setView={setView} />}
-          {view === 'inbox' && <Inbox records={records} changes={changes} setView={setView} />}
-          {view === 'attendees' && <AttendeesView records={records} maps={maps} />}
-          {view === 'speakers' && <SpeakersView records={records} maps={maps} />}
-          {view === 'sponsors' && <SponsorsView records={records} />}
+          {view === 'live' && <Live records={activeRecords} changes={changes} />}
+          {view === 'preflight' && <Preflight records={activeRecords} setView={setView} />}
+          {view === 'inbox' && <Inbox records={activeRecords} changes={changes} setView={setView} />}
+          {view === 'attendees' && <AttendeesView records={activeRecords} maps={maps} />}
+          {view === 'speakers' && <SpeakersView records={activeRecords} maps={maps} />}
+          {view === 'sponsors' && <SponsorsView records={activeRecords} />}
 
           {view === 'changes' && (
             <Changes
               initialActiveId={reviewId}
-              records={records}
+              records={activeRecords}
               maps={maps}
               changes={changes}
               setChanges={setChanges}
@@ -301,18 +335,18 @@ export default function App() {
               operatorName={user?.email ?? undefined}
             />
           )}
-          {view === 'simulate' && <Simulate records={records} onConvert={convertScenario} />}
+          {view === 'simulate' && <Simulate records={activeRecords} onConvert={convertScenario} />}
 
-          {view === 'sessions' && <SessionsView records={records} maps={maps} />}
-          {view === 'tasks' && <TasksView records={records} maps={maps} />}
-          {view === 'volunteers' && <VolunteersView records={records} maps={maps} />}
-          {view === 'venues' && <VenuesView records={records} />}
-          {view === 'comms' && <CommsView records={records} />}
-          {view === 'risks' && <Risks records={records} changes={changes} setView={setView} />}
+          {view === 'sessions' && <SessionsView records={activeRecords} maps={maps} isCustom={isCustomActive} onAdd={makeAdd('sessions')} />}
+          {view === 'tasks' && <TasksView records={activeRecords} maps={maps} />}
+          {view === 'volunteers' && <VolunteersView records={activeRecords} maps={maps} />}
+          {view === 'venues' && <VenuesView records={activeRecords} />}
+          {view === 'comms' && <CommsView records={activeRecords} />}
+          {view === 'risks' && <Risks records={activeRecords} changes={changes} setView={setView} />}
 
           {view === 'impacts' && (
             <ImpactReports
-              records={records}
+              records={activeRecords}
               changes={changes}
               maps={maps}
               selectedId={selectedImpactId}
@@ -331,7 +365,7 @@ export default function App() {
         </div>
       </main>
 
-      {palette && <CommandPalette records={records} onGo={goView} onClose={() => setPalette(false)} />}
+      {palette && <CommandPalette records={activeRecords} onGo={goView} onClose={() => setPalette(false)} />}
 
       {showAddEvent && (
         <AddEventWizard

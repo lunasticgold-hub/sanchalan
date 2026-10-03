@@ -7,7 +7,7 @@ import { EST_ATTENDEES } from '../lib/engine';
 import ProvenanceBadge from '../components/ProvenanceBadge';
 import type { Maps } from './Changes';
 import {
-  Badge, cx, fmtDate, fmtTime, prioTone, statusTone, td, th, tr,
+  Badge, cx, fmtDate, fmtTime, prioTone, QuickAdd, statusTone, td, th, tr,
 } from '../components/ui';
 
 function Drawer({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -41,7 +41,7 @@ function sessionRisk(records: Records, sessionId: string): string | null {
   return null;
 }
 
-export function SessionsView({ records, maps }: { records: Records; maps: Maps }) {
+export function SessionsView({ records, maps, isCustom, onAdd }: { records: Records; maps: Maps; isCustom?: boolean; onAdd?: (vals: Record<string, string>) => void }) {
   const [sel, setSel] = useState<string | null>(null);
   const [venueFilter, setVenueFilter] = useState('all');
   const rows = useMemo(() => {
@@ -56,16 +56,29 @@ export function SessionsView({ records, maps }: { records: Records; maps: Maps }
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-[20px] font-semibold tracking-tight">Sessions</h1>
-        <select
-          value={venueFilter}
-          onChange={(e) => setVenueFilter(e.target.value)}
-          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-[13px]"
-        >
-          <option value="all">All venues</option>
-          {records.venues.map((v) => (
-            <option key={v.id} value={v.id}>{v.name}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          {isCustom && onAdd && (
+            <QuickAdd
+              title="Session"
+              fields={[
+                { key: 'name', label: 'Session name *' },
+                { key: 'starts', label: 'Start time (e.g. 10:00)' },
+                { key: 'ends', label: 'End time (e.g. 11:00)' },
+              ]}
+              onAdd={onAdd}
+            />
+          )}
+          <select
+            value={venueFilter}
+            onChange={(e) => setVenueFilter(e.target.value)}
+            className="rounded-md border border-gray-300 bg-white px-2 py-1 text-[13px]"
+          >
+            <option value="all">All venues</option>
+            {records.venues.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="w-full border-collapse">
