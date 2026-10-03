@@ -11,6 +11,7 @@ import {
 } from '../components/ui';
 
 import { useRef } from 'react';
+import Remind from '../components/Remind';
 
 function Drawer({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   // Only close when the press starts AND ends on the backdrop.
@@ -201,6 +202,24 @@ export function TasksView({ records, maps, isCustom, onAdd }: { records: Records
           <Rel label="Priority" value={<Badge tone={prioTone(t.priority)}>{t.priority}</Badge>} />
           <Rel label="Source" value={<ProvenanceBadge source={t.source} />} />
           <Rel label="Detail" value={t.detail} />
+          {t.ownerId && (() => {
+            const owner = records.volunteers.find((v) => v.id === t.ownerId);
+            if (!owner) return null;
+            const due = t.due ? new Date(t.due).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'no due date set';
+            return (
+              <div className="border-b border-[#F0EFEC] py-2">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Nudge owner</div>
+                <div className="mt-1.5">
+                  <Remind
+                    toName={owner.name}
+                    phone={owner.phone}
+                    eventName={records.events[0]?.name ?? 'the event'}
+                    defaultMessage={`Hi ${owner.name}, quick reminder from ${records.events[0]?.name ?? 'the event'} team: "${t.title}" is due ${due} (status: ${t.status}). Please update it when done. Thanks!`}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </Drawer>
       )}
     </div>
@@ -249,6 +268,21 @@ export function VolunteersView({ records, maps, isCustom, onAdd }: { records: Re
           <Rel label="Skills" value={v.skills.join(', ')} />
           <Rel label="Assigned sessions" value={v.sessionIds.map((id) => maps.session.get(id)).join(', ') || '—'} />
           <Rel label="Assigned tasks" value={vTasks.length ? vTasks.map((t) => t.title).join('; ') : '—'} />
+          <div className="border-b border-[#F0EFEC] py-2">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Reminder</div>
+            <div className="mt-1.5">
+              <Remind
+                toName={v.name}
+                phone={v.phone}
+                eventName={records.events[0]?.name ?? 'the event'}
+                defaultMessage={
+                  vTasks.filter((t) => t.status !== 'Done').length
+                    ? `Hi ${v.name}, quick reminder from ${records.events[0]?.name ?? 'the event'} team. You have ${vTasks.filter((t) => t.status !== 'Done').length} open task(s): ${vTasks.filter((t) => t.status !== 'Done').map((t) => `"${t.title}"`).join(', ')}. Please update them when done. Thanks!`
+                    : `Hi ${v.name}, thanks for volunteering with ${records.events[0]?.name ?? 'the event'}! No open tasks for you right now — we'll ping you if anything comes up.`
+                }
+              />
+            </div>
+          </div>
         </Drawer>
       )}
     </div>
