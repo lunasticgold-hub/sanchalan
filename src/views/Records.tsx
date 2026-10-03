@@ -124,7 +124,7 @@ export function SessionsView({ records, maps, isCustom, onAdd }: { records: Reco
   );
 }
 
-export function TasksView({ records, maps }: { records: Records; maps: Maps }) {
+export function TasksView({ records, maps, isCustom, onAdd }: { records: Records; maps: Maps; isCustom?: boolean; onAdd?: (v: Record<string,string>) => void }) {
   const [filter, setFilter] = useState('all');
   const [sel, setSel] = useState<string | null>(null);
   const rows = filter === 'all' ? records.tasks : records.tasks.filter((t) => t.status === filter);
@@ -133,7 +133,11 @@ export function TasksView({ records, maps }: { records: Records; maps: Maps }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-[20px] font-semibold tracking-tight">Tasks</h1>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
+          {isCustom && onAdd && (
+            <QuickAdd title="Task" fields={[{ key: 'name', label: 'Task title *' }, { key: 'detail', label: 'Details' }]} onAdd={onAdd} />
+          )}
+          <div className="flex gap-1">
           {['all', 'Todo', 'In progress', 'Blocked', 'Done'].map((f) => (
             <button
               key={f}
@@ -146,6 +150,7 @@ export function TasksView({ records, maps }: { records: Records; maps: Maps }) {
               {f === 'all' ? 'All' : f}
             </button>
           ))}
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
@@ -186,13 +191,18 @@ export function TasksView({ records, maps }: { records: Records; maps: Maps }) {
   );
 }
 
-export function VolunteersView({ records, maps }: { records: Records; maps: Maps }) {
+export function VolunteersView({ records, maps, isCustom, onAdd }: { records: Records; maps: Maps; isCustom?: boolean; onAdd?: (v: Record<string,string>) => void }) {
   const [sel, setSel] = useState<string | null>(null);
   const v = sel ? records.volunteers.find((x) => x.id === sel) : null;
   const vTasks = v ? records.tasks.filter((t) => t.ownerId === v.id) : [];
   return (
     <div className="space-y-4">
-      <h1 className="text-[20px] font-semibold tracking-tight">Volunteers</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-[20px] font-semibold tracking-tight">Volunteers</h1>
+        {isCustom && onAdd && (
+          <QuickAdd title="Volunteer" fields={[{ key: 'name', label: 'Name *' }, { key: 'role', label: 'Role' }, { key: 'shift', label: 'Shift' }]} onAdd={onAdd} />
+        )}
+      </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="w-full border-collapse">
           <thead className="bg-gray-50">
@@ -229,13 +239,18 @@ export function VolunteersView({ records, maps }: { records: Records; maps: Maps
   );
 }
 
-export function VenuesView({ records }: { records: Records }) {
+export function VenuesView({ records, isCustom, onAdd }: { records: Records; isCustom?: boolean; onAdd?: (v: Record<string,string>) => void }) {
   const [sel, setSel] = useState<string | null>(null);
   const v = sel ? records.venues.find((x) => x.id === sel) : null;
   const bookings = (id: string) => records.sessions.filter((s) => s.venueId === id);
   return (
     <div className="space-y-4">
-      <h1 className="text-[20px] font-semibold tracking-tight">Venues</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-[20px] font-semibold tracking-tight">Venues</h1>
+        {isCustom && onAdd && (
+          <QuickAdd title="Venue" fields={[{ key: 'name', label: 'Venue name *' }, { key: 'capacity', label: 'Capacity', type: 'number' }, { key: 'location', label: 'Location' }]} onAdd={onAdd} />
+        )}
+      </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         <table className="w-full border-collapse">
           <thead className="bg-gray-50">

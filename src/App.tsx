@@ -338,9 +338,9 @@ export default function App() {
           {view === 'simulate' && <Simulate records={activeRecords} onConvert={convertScenario} />}
 
           {view === 'sessions' && <SessionsView records={activeRecords} maps={maps} isCustom={isCustomActive} onAdd={makeAdd('sessions')} />}
-          {view === 'tasks' && <TasksView records={activeRecords} maps={maps} />}
-          {view === 'volunteers' && <VolunteersView records={activeRecords} maps={maps} />}
-          {view === 'venues' && <VenuesView records={activeRecords} />}
+          {view === 'tasks' && <TasksView records={activeRecords} maps={maps} isCustom={isCustomActive} onAdd={makeAdd('tasks')} />}
+          {view === 'volunteers' && <VolunteersView records={activeRecords} maps={maps} isCustom={isCustomActive} onAdd={makeAdd('volunteers')} />}
+          {view === 'venues' && <VenuesView records={activeRecords} isCustom={isCustomActive} onAdd={makeAdd('venues')} />}
           {view === 'comms' && <CommsView records={activeRecords} />}
           {view === 'risks' && <Risks records={activeRecords} changes={changes} setView={setView} />}
 
