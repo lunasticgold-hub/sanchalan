@@ -1,7 +1,7 @@
 // Notion workspace: connection status + connect-your-own flow.
 
 import { useState } from 'react';
-import { Badge, Btn, SectionTitle, cx, fmtDateTime } from '../components/ui';
+import { Badge, Btn, Linkify, SectionTitle, cx, fmtDateTime } from '../components/ui';
 import { DB_TITLES } from '../config';
 import type { DbKey } from '../lib/types';
 
@@ -110,7 +110,7 @@ export default function NotionStatus({
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[12px] font-bold text-gray-700">{s.n}</span>
               <div>
                 <div className="text-[13px] font-semibold text-gray-900">{s.title}</div>
-                <div className="mt-0.5 text-[13px] text-gray-600">{s.body}</div>
+                <div className="mt-0.5 text-[13px] text-gray-600"><Linkify text={s.body} /></div>
               </div>
             </div>
           ))}

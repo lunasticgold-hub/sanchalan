@@ -168,3 +168,29 @@ export function fmtDate(iso: string) {
     year: 'numeric',
   });
 }
+
+// Linkify: turns URLs in plain text into clickable, highlighted links.
+export function Linkify({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s)>\]]+|(?:www\.|notion\.so)[^\s)>\]]*)/gi);
+  return (
+    <>
+      {parts.map((p, i) => {
+        const isUrl = /^(https?:\/\/|www\.|notion\.so)/i.test(p);
+        if (!isUrl) return <span key={i}>{p}</span>;
+        const href = /^https?:\/\//i.test(p) ? p : `https://${p}`;
+        return (
+          <a
+            key={i}
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900 hover:decoration-blue-500"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {p}
+          </a>
+        );
+      })}
+    </>
+  );
+}

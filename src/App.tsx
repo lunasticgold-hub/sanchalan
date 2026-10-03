@@ -17,6 +17,7 @@ import NotionStatus from './views/NotionStatus';
 import { fetchAllRecords } from './lib/api';
 import type { ChangeRequest, Records } from './lib/types';
 import { cx } from './components/ui';
+import { Linkify } from './components/ui';
 import Auth from './components/Auth';
 import { supabase, supabaseConfigured } from './lib/supabase';
 
@@ -399,20 +400,23 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
             {[
               'Create an integration at notion.so/my-integrations and copy the secret (starts with ntn_).',
               'In Notion, open each event database → ••• → Add connections → pick your integration.',
-              'Paste the token below.',
+              'Paste the token below to continue.',
             ].map((t, i) => (
               <div key={i} className="flex gap-2 text-[13px] text-gray-700">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-bold">{i + 1}</span>
-                {t}
+                <span><Linkify text={t} /></span>
               </div>
             ))}
             <input
               value={token}
               onChange={(e) => setToken(e.target.value)}
               type="password"
-              placeholder="ntn_… or secret_… (optional for now)"
+              placeholder="ntn_… or secret_…"
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
             />
+            {!token.trim() && (
+              <p className="text-[12px] text-amber-700">Enter your Notion integration token to continue to the next step.</p>
+            )}
           </div>
         )}
 
@@ -453,7 +457,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
             {step < 4 ? (
               <button
                 onClick={() => setStep(step + 1)}
-                disabled={step === 1 && !canNext1}
+                disabled={(step === 1 && !canNext1) || (step === 2 && !token.trim())}
                 className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
               >
                 Continue
