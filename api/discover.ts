@@ -30,7 +30,7 @@ export default async function handler(req: any, res: any) {
     const data = await resp.json();
     const dbs = (data.results ?? []).map((db: any) => ({
       id: db.id,
-      name: db.title?.[0]?.plain_text ?? 'Untitled',
+      name: (db.title ?? []).map((t: any) => t.plain_text ?? '').join('') || 'Untitled',
     }));
     res.status(200).json({ databases: dbs });
   } catch (e: any) {

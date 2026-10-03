@@ -603,9 +603,23 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
                   // Save Notion mapping for this custom event
                   if (newEvent?.id && discovered && discovered.length > 0) {
                     const mapping: Record<string, string> = {};
-                    ['Events', 'Venues', 'Sessions', 'Volunteers', 'Tasks', 'Communications', 'Impact Reports', 'Attendees', 'Speakers', 'Sponsors', 'Risks'].forEach((expected) => {
+                    // Keys must match DbKey in src/lib/types.ts
+                    const keyMap: Record<string, string> = {
+                      'Events': 'events',
+                      'Venues': 'venues',
+                      'Sessions': 'sessions',
+                      'Volunteers': 'volunteers',
+                      'Tasks': 'tasks',
+                      'Communications': 'comms',
+                      'Impact Reports': 'impactReports',
+                      'Attendees': 'attendees',
+                      'Speakers': 'speakers',
+                      'Sponsors': 'sponsors',
+                      'Risks': 'risks',
+                    };
+                    Object.keys(keyMap).forEach((expected) => {
                       const m = matchDb(expected);
-                      if (m) mapping[expected.toLowerCase().replace(/ /g, '')] = m.id;
+                      if (m) mapping[keyMap[expected]] = m.id;
                     });
                     try {
                       localStorage.setItem(`sanchalan_notion_map_${newEvent.id}`, JSON.stringify({ token: token.trim(), databases: mapping }));
