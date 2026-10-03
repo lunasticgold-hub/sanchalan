@@ -205,8 +205,13 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
       <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
-        <div className="mt-0.5 text-[13px] text-gray-500">Event Command Center</div>
+        <div className="flex items-center gap-2">
+          <Logo size={24} />
+          <div>
+            <div className="text-[16px] font-bold tracking-tight text-gray-900 leading-none">Sanchalan</div>
+            <div className="mt-0.5 text-[11px] text-gray-500">Event Command Center</div>
+          </div>
+        </div>
 
         <div className="mt-5 flex rounded-md bg-gray-100 p-0.5">
           {(['in', 'up'] as const).map((m) => (
