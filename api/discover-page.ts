@@ -88,8 +88,8 @@ export default async function handler(req: any, res: any) {
   } catch (e: any) {
     // 404 usually means the page isn't shared with the integration
     const msg = e.message ?? 'Discovery failed';
-    if (msg.includes('404') || msg.includes('not be found') || msg.includes('Could not find')) {
-      res.status(404).json({ error: 'Page not found. Make sure you shared this page with your integration (open it → ••• → Add connections).' });
+    if (msg.includes('404') || msg.includes('not be found') || msg.includes('Could not find') || msg.includes('object_not_found')) {
+      res.status(404).json({ error: 'NOT_SHARED' });
     } else {
       res.status(500).json({ error: msg });
     }

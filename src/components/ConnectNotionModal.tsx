@@ -213,7 +213,22 @@ export default function ConnectNotionModal({
                 </p>
               </div>
             )}
-            {discoverErr && <p className="mt-2 text-[13px] text-red-600">{discoverErr}</p>}
+            {discoverErr && (
+              discoverErr === 'NOT_SHARED' ? (
+                <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <div className="text-[13px] font-semibold text-amber-800">⚠ Notion can't see this page yet</div>
+                  <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[12.5px] text-amber-700">
+                    <li>Open that page in Notion (the link you pasted)</li>
+                    <li>Click <strong>•••</strong> at the top right</li>
+                    <li>Click <strong>Add connections</strong></li>
+                    <li>Select your <strong>Sanchalan</strong> integration → Confirm</li>
+                    <li>Come back here and click <strong>Find databases</strong> again</li>
+                  </ol>
+                </div>
+              ) : (
+                <p className="mt-2 text-[13px] text-red-600">{discoverErr}</p>
+              )
+            )}
 
             {discovered && (
               <div>
