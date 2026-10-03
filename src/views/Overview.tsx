@@ -1,15 +1,15 @@
-// Overview — the event workspace home.
-// Answers "what needs my attention?" with calm, scannable hierarchy.
+// Overview — the event workspace home page.
+// A document, not a dashboard. Rows and dividers, not cards.
 
 import type { ChangeRequest, Records } from '../lib/types';
 import { useState } from 'react';
-import { Badge, Btn, EmptyState, SectionTitle, PageHeader, fmtDate, prioTone } from '../components/ui';
+import { Badge, Btn, EmptyState, fmtDate, prioTone } from '../components/ui';
 import PullFromNotionBanner from '../components/PullFromNotionBanner';
 import ConnectNotionModal from '../components/ConnectNotionModal';
 import type { View } from '../components/Sidebar';
 
 function relativeDay(iso: string) {
-  if (!iso) return '—';
+  if (!iso) return '';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(iso);
@@ -18,7 +18,8 @@ function relativeDay(iso: string) {
   if (days === 0) return 'Today';
   if (days === 1) return 'Tomorrow';
   if (days > 1) return `In ${days} days`;
-  return fmtDate(iso);
+  if (days < 0) return fmtDate(iso);
+  return '';
 }
 
 export default function Overview({
@@ -49,31 +50,55 @@ export default function Overview({
     if (t.status === 'Done' || !t.due) return false;
     return new Date(t.due) < new Date(new Date().setHours(0, 0, 0, 0));
   });
-  const status: 'At risk' | 'On track' = p0.length > 0 || pending.length > 0 ? 'At risk' : 'On track';
   const isEmptyCustom = activeEvent?.id.startsWith('custom-') &&
     records.sessions.length === 0 && records.tasks.length === 0 &&
     records.volunteers.length === 0 && records.attendees.length === 0;
 
-  // Upcoming sessions (today onwards, sorted)
   const upcoming = [...records.sessions]
     .filter((s) => !s.starts || new Date(s.starts) >= new Date(new Date().setHours(0, 0, 0, 0)))
     .sort((a, b) => (a.starts ?? '').localeCompare(b.starts ?? ''))
-    .slice(0, 5);
+    .slice(0, 6);
 
-  // Recent activity from changes
   const recentActivity = [...changes].reverse().slice(0, 6);
-
   const [showConnect, setShowConnect] = useState(false);
-  const needsAttentionCount = p0.length + pending.length + overdueTasks.length;
+
+  const attentionItems: { kind: string; title: string; sub: string; action: () => void; actionLabel: string; badge?: React.ReactNode }[] = [
+    ...p0.map((r) => ({
+      kind: 'Critical',
+      title: r.text,
+      sub: 'Risk · needs resolution before applying',
+      action: () => setView('risks'),
+      actionLabel: 'View',
+      badge: <Badge tone={prioTone('P0')}>P0</Badge>,
+    })),
+    ...pending.map((c) => ({
+      kind: 'Approval',
+      title: c.input,
+      sub: 'Change request · awaiting your review',
+      action: () => onReview(c.id),
+      actionLabel: 'Review',
+      badge: <Badge tone="amber">Approval</Badge>,
+    })),
+    ...overdueTasks.slice(0, 3).map((t) => ({
+      kind: 'Overdue',
+      title: t.title,
+      sub: `Task · due ${fmtDate(t.due)}`,
+      action: () => setView('tasks'),
+      actionLabel: 'View',
+      badge: <Badge tone="red">Overdue</Badge>,
+    })),
+  ];
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-[900px]">
       {isEmptyCustom && activeEvent && (
-        <PullFromNotionBanner
-          eventId={activeEvent.id}
-          setView={setView}
-          onPulled={(updater) => updateCustomData?.(updater)}
-        />
+        <div className="mb-8">
+          <PullFromNotionBanner
+            eventId={activeEvent.id}
+            setView={setView}
+            onPulled={(updater) => updateCustomData?.(updater)}
+          />
+        </div>
       )}
       {showConnect && activeEvent && (
         <ConnectNotionModal
@@ -86,167 +111,138 @@ export default function Overview({
         />
       )}
 
-      {/* Header */}
-      <PageHeader
-        title={event?.name ?? 'Event overview'}
-        meta={
-          <>
-            {relativeDay(event?.date ?? '')} · {fmtDate(event?.date ?? '')}
-            {event?.organizer ? ` · ${event.organizer}` : ''}
-          </>
-        }
-        action={
-          <div className="flex items-center gap-2">
-            {activeEvent?.id.startsWith('custom-') && (
-              <Btn variant="secondary" onClick={() => setShowConnect(true)}>⇄ Sync from Notion</Btn>
-            )}
-            <Btn variant="primary" onClick={() => setView('changes')}>New change</Btn>
-          </div>
-        }
-      />
-
-      {/* Quick summary — compact metrics */}
-      <section aria-label="Event summary">
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-y border-[#E8E8E6] py-4">
-          {[
-            ['Sessions', String(records.sessions.length), 'sessions' as View],
-            ['Attendees', String(records.attendees.length), 'attendees' as View],
-            ['Open tasks', String(openTasks.length), 'tasks' as View],
-            ['Critical issues', String(p0.length), 'risks' as View],
-            ['Pending approvals', String(pending.length), 'changes' as View],
-          ].map(([label, value, v]) => (
-            <button key={label as string} onClick={() => setView(v as View)} className="group text-left">
-              <div className="text-[20px] font-semibold tabular-nums tracking-tight text-[#191919] group-hover:underline underline-offset-4">{value}</div>
-              <div className="text-[12px] text-[#6B6B6B]">{label}</div>
-            </button>
-          ))}
-          <div className="ml-auto">
-            <Badge tone={status === 'At risk' ? 'red' : 'green'}>{status}</Badge>
-          </div>
+      {/* Event title — document style */}
+      <div className="mb-2 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[32px] font-semibold tracking-[-0.02em] text-[#191919]">{event?.name ?? 'Event overview'}</h1>
+          <p className="mt-1.5 text-[14px] text-[#6B6B6B]">
+            {[relativeDay(event?.date ?? ''), fmtDate(event?.date ?? ''), event?.organizer].filter(Boolean).join(' · ')}
+          </p>
+          <p className="mt-2 text-[13px] text-[#9B9B9B]">
+            {records.sessions.length} sessions · {records.attendees.length} attendees · {openTasks.length} open tasks · {p0.length} critical issues
+          </p>
         </div>
-      </section>
-
-      {/* Needs attention — the most useful section */}
-      {needsAttentionCount > 0 && (
-        <section aria-label="Needs attention">
-          <SectionTitle>Needs attention</SectionTitle>
-          <div className="divide-y divide-[#F0EFEC] rounded-[10px] border border-[#E8E8E6] bg-white">
-            {p0.map((r, i) => (
-              <div key={`p0-${i}`} className="flex items-start gap-3 px-4 py-3">
-                <Badge tone={prioTone('P0')}>P0</Badge>
-                <p className="flex-1 text-[13px] leading-relaxed text-[#191919]">{r.text}</p>
-                <button onClick={() => setView('risks')} className="shrink-0 text-[12.5px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">View →</button>
-              </div>
-            ))}
-            {pending.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 px-4 py-3">
-                <Badge tone="amber">Approval</Badge>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-medium text-[#191919]">{c.input}</div>
-                  <div className="text-[12px] text-[#9B9B9B]">Awaiting your review</div>
-                </div>
-                <Btn variant="secondary" onClick={() => onReview(c.id)}>Review</Btn>
-              </div>
-            ))}
-            {overdueTasks.slice(0, 4).map((t) => (
-              <div key={t.id} className="flex items-center gap-3 px-4 py-3">
-                <Badge tone="red">Overdue</Badge>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] text-[#191919]">{t.title}</div>
-                  <div className="text-[12px] text-[#9B9B9B]">Due {fmtDate(t.due)}</div>
-                </div>
-                <button onClick={() => setView('tasks')} className="shrink-0 text-[12.5px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">View →</button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Two-column: agenda + activity */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <section aria-label="Upcoming sessions">
-          <SectionTitle action={<button onClick={() => setView('sessions')} className="text-[12.5px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">View all →</button>}>
-            Upcoming sessions
-          </SectionTitle>
-          {upcoming.length === 0 ? (
-            <EmptyState
-              title="No upcoming sessions"
-              body="Sessions you add will appear here in chronological order."
-              action={<Btn variant="secondary" onClick={() => setView('sessions')}>Go to sessions</Btn>}
-            />
-          ) : (
-            <div className="divide-y divide-[#F0EFEC] rounded-[10px] border border-[#E8E8E6] bg-white">
-              {upcoming.map((s) => (
-                <button key={s.id} onClick={() => setView('sessions')} className="flex w-full items-center gap-4 px-4 py-3 text-left transition-quiet hover:bg-[#F5F5F3]">
-                  <div className="w-14 shrink-0 text-[13px] font-medium tabular-nums text-[#191919]">
-                    {s.starts ? new Date(s.starts).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }) : '—'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-medium text-[#191919]">{s.name}</div>
-                    <div className="truncate text-[12px] text-[#9B9B9B]">{s.speaker || s.format || ''}</div>
-                  </div>
-                  {s.status && <Badge tone={s.status === 'Confirmed' ? 'green' : 'gray'}>{s.status}</Badge>}
-                </button>
-              ))}
-            </div>
+        <div className="flex shrink-0 items-center gap-2 pt-1">
+          {activeEvent?.id.startsWith('custom-') && (
+            <button onClick={() => setShowConnect(true)} className="text-[13px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">
+              ⇄ Sync
+            </button>
           )}
-        </section>
-
-        <section aria-label="Recent activity">
-          <SectionTitle action={<button onClick={() => setView('changes')} className="text-[12.5px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">View all →</button>}>
-            Recent activity
-          </SectionTitle>
-          {recentActivity.length === 0 ? (
-            <EmptyState
-              title="No activity yet"
-              body="Changes you analyze and apply will appear here as a chronological feed."
-            />
-          ) : (
-            <div className="divide-y divide-[#F0EFEC] rounded-[10px] border border-[#E8E8E6] bg-white">
-              {recentActivity.map((c) => (
-                <button key={c.id} onClick={() => onReview(c.id)} className="flex w-full items-start gap-3 px-4 py-3 text-left transition-quiet hover:bg-[#F5F5F3]">
-                  <div className="mt-0.5 shrink-0">
-                    <Badge tone={c.status === 'applied' ? 'green' : c.status === 'analyzed' ? 'amber' : 'gray'}>
-                      {c.status === 'applied' ? 'Applied' : c.status === 'analyzed' ? 'Analyzed' : c.status}
-                    </Badge>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] text-[#191919]">{c.input}</div>
-                    <div className="text-[12px] text-[#9B9B9B]">
-                      {c.createdAt ? new Date(c.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : ''}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
+          <Btn variant="primary" onClick={() => setView('changes')}>New change</Btn>
+        </div>
       </div>
 
-      {/* Event data — quiet index */}
-      <section aria-label="Event data">
-        <SectionTitle>Event data</SectionTitle>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-[#E8E8E6] bg-[#E8E8E6] md:grid-cols-4">
+      <hr className="my-8 border-[#E8E8E6]" />
+
+      {/* Needs attention — rows, not cards */}
+      <section className="mb-10" aria-label="Needs attention">
+        <h2 className="mb-1 text-[20px] font-semibold tracking-tight text-[#191919]">Needs attention</h2>
+        {attentionItems.length === 0 ? (
+          <p className="mt-3 text-[14px] text-[#9B9B9B]">Nothing needs your attention right now.</p>
+        ) : (
+          <>
+            <p className="mb-4 text-[13px] text-[#6B6B6B]">{attentionItems.length} item{attentionItems.length === 1 ? '' : 's'} need{attentionItems.length === 1 ? 's' : ''} your attention</p>
+            <div>
+              {attentionItems.map((item, i) => (
+                <div key={i} className="flex items-center gap-4 border-b border-[#F0EFEC] py-3 first:border-t">
+                  <div className="w-20 shrink-0">{item.badge ?? <span className="text-[12px] font-medium text-[#9B9B9B]">{item.kind}</span>}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[14px] text-[#191919]">{item.title}</div>
+                    <div className="text-[12.5px] text-[#9B9B9B]">{item.sub}</div>
+                  </div>
+                  <button onClick={item.action} className="shrink-0 text-[13px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">
+                    {item.actionLabel} →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Schedule — timeline rows */}
+      <section className="mb-10" aria-label="Schedule">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-[20px] font-semibold tracking-tight text-[#191919]">Schedule</h2>
+          <button onClick={() => setView('sessions')} className="text-[13px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">All sessions →</button>
+        </div>
+        {upcoming.length === 0 ? (
+          <EmptyState
+            title="No sessions scheduled"
+            body="Add sessions to build your event schedule."
+            action={<Btn variant="secondary" onClick={() => setView('sessions')}>Go to sessions</Btn>}
+          />
+        ) : (
+          <div>
+            {upcoming.map((s) => (
+              <button key={s.id} onClick={() => setView('sessions')} className="flex w-full items-baseline gap-6 border-b border-[#F0EFEC] py-3.5 text-left first:border-t transition-quiet hover:bg-[#F5F5F3]">
+                <div className="w-20 shrink-0 text-[13px] tabular-nums text-[#6B6B6B]">
+                  {s.starts ? new Date(s.starts).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }) : '—'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[15px] font-medium text-[#191919]">{s.name}</div>
+                  <div className="mt-0.5 text-[13px] text-[#9B9B9B]">
+                    {[s.speaker, s.format].filter(Boolean).join(' · ') || '—'}
+                  </div>
+                </div>
+                {s.status && (
+                  <span className="shrink-0 text-[12.5px] text-[#9B9B9B]">{s.status}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Recent activity — rows */}
+      <section className="mb-10" aria-label="Recent activity">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-[20px] font-semibold tracking-tight text-[#191919]">Recent activity</h2>
+          <button onClick={() => setView('changes')} className="text-[13px] font-medium text-[#6B6B6B] hover:text-[#191919] transition-quiet">All changes →</button>
+        </div>
+        {recentActivity.length === 0 ? (
+          <p className="text-[14px] text-[#9B9B9B]">No activity yet. Changes you analyze will appear here.</p>
+        ) : (
+          <div>
+            {recentActivity.map((c) => (
+              <button key={c.id} onClick={() => onReview(c.id)} className="flex w-full items-baseline gap-6 border-b border-[#F0EFEC] py-3 text-left first:border-t transition-quiet hover:bg-[#F5F5F3]">
+                <div className="w-20 shrink-0 text-[12.5px] tabular-nums text-[#9B9B9B]">
+                  {c.createdAt ? new Date(c.createdAt).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : '—'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[14px] text-[#191919]">{c.input}</div>
+                  <div className="text-[12.5px] text-[#9B9B9B]">
+                    {c.status === 'applied' ? 'Applied' : c.status === 'analyzed' ? 'Analysis complete · awaiting approval' : c.status}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Event index — quiet text links, not cards */}
+      <section aria-label="Event index">
+        <h2 className="mb-4 text-[20px] font-semibold tracking-tight text-[#191919]">Browse</h2>
+        <div className="columns-2 gap-8 md:columns-3">
           {[
-            { view: 'attendees' as View, label: 'Attendees', count: records.attendees.length },
             { view: 'sessions' as View, label: 'Sessions', count: records.sessions.length },
+            { view: 'attendees' as View, label: 'Attendees', count: records.attendees.length },
             { view: 'venues' as View, label: 'Venues', count: records.venues.length },
             { view: 'volunteers' as View, label: 'Volunteers', count: records.volunteers.length },
             { view: 'speakers' as View, label: 'Speakers', count: records.speakers.length },
             { view: 'sponsors' as View, label: 'Sponsors', count: records.sponsors.length },
             { view: 'tasks' as View, label: 'Tasks', count: records.tasks.length },
             { view: 'comms' as View, label: 'Communications', count: records.comms.length },
+            { view: 'risks' as View, label: 'Risks', count: records.risks.length },
           ].map((c) => (
             <button
               key={c.view}
               onClick={() => setView(c.view)}
-              className="group flex items-center justify-between bg-white px-4 py-3 text-left transition-quiet hover:bg-[#F5F5F3]"
+              className="mb-1 flex w-full items-baseline justify-between break-inside-avoid py-1.5 text-left transition-quiet hover:bg-[#F5F5F3] rounded px-2 -mx-2"
             >
-              <div>
-                <div className="text-[16px] font-semibold tabular-nums text-[#191919]">{c.count}</div>
-                <div className="text-[12px] text-[#6B6B6B]">{c.label}</div>
-              </div>
-              <span className="text-[#D9D9D6] transition-quiet group-hover:translate-x-0.5 group-hover:text-[#191919]" aria-hidden>→</span>
+              <span className="text-[14px] text-[#191919]">{c.label}</span>
+              <span className="text-[13px] tabular-nums text-[#9B9B9B]">{c.count}</span>
             </button>
           ))}
         </div>

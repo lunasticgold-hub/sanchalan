@@ -94,9 +94,9 @@ export function AttendeesView({ records, maps }: { records: Records; maps: Maps 
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Name</th><th className={th}>Ticket</th><th className={th}>Organization</th>
               <th className={th}>Check-in</th><th className={th}>Sessions</th>
@@ -151,9 +151,9 @@ export function SpeakersView({ records, maps }: { records: Records; maps: Maps }
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Speakers</h1>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Speaker</th><th className={th}>Session</th><th className={th}>Readiness</th>
               <th className={th}>Arrival</th><th className={th}>Confirmation</th>
@@ -214,9 +214,9 @@ export function SponsorsView({ records }: { records: Records }) {
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Sponsors</h1>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Company</th><th className={th}>Tier</th><th className={th}>Booth</th>
               <th className={th}>Deliverables</th><th className={th}>Payment</th>

@@ -65,9 +65,9 @@ function NavItem({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'mb-px flex w-full items-center justify-between rounded-[6px] px-2.5 py-[7px] text-[13px] transition-quiet',
+        'mb-px flex w-full items-center justify-between rounded-[4px] px-2.5 py-[7px] text-[13px] transition-quiet',
         active
-          ? 'bg-[#EFEFEA] font-medium text-[#191919]'
+          ? 'bg-[#F1F1EF] font-medium text-[#191919]'
           : 'text-[#6B6B6B] hover:bg-[#F5F5F3] hover:text-[#191919]',
       )}
     >
@@ -185,8 +185,8 @@ export default function Sidebar({
         <button
           onClick={() => { setView('notion'); setMobileOpen(false); }}
           className={cx(
-            'flex w-full items-center gap-2 rounded-[6px] px-2.5 py-[7px] text-left text-[13px] transition-quiet',
-            view === 'notion' ? 'bg-[#EFEFEA] font-medium text-[#191919]' : 'text-[#6B6B6B] hover:bg-[#F5F5F3] hover:text-[#191919]',
+            'flex w-full items-center gap-2 rounded-[4px] px-2.5 py-[7px] text-left text-[13px] transition-quiet',
+            view === 'notion' ? 'bg-[#F1F1EF] font-medium text-[#191919]' : 'text-[#6B6B6B] hover:bg-[#F5F5F3] hover:text-[#191919]',
           )}
         >
           <span

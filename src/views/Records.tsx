@@ -96,9 +96,9 @@ export function SessionsView({ records, maps, isCustom, onAdd }: { records: Reco
           </select>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Session</th><th className={th}>Time</th><th className={th}>Venue</th>
               <th className={th}>Speaker</th><th className={th}>Format</th><th className={th}>Status</th>
@@ -169,9 +169,9 @@ export function TasksView({ records, maps, isCustom, onAdd }: { records: Records
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Task</th><th className={th}>Session</th><th className={th}>Owner</th>
               <th className={th}>Due</th><th className={th}>Status</th><th className={th}>Priority</th><th className={th}>Source</th>
@@ -219,9 +219,9 @@ export function VolunteersView({ records, maps, isCustom, onAdd }: { records: Re
           <QuickAdd title="Volunteer" fields={[{ key: 'name', label: 'Name *' }, { key: 'role', label: 'Role' }, { key: 'shift', label: 'Shift' }]} onAdd={onAdd} />
         )}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Name</th><th className={th}>Role</th><th className={th}>Assigned sessions</th>
               <th className={th}>Shift</th><th className={th}>Skills</th><th className={th}>Contact</th>
@@ -267,9 +267,9 @@ export function VenuesView({ records, isCustom, onAdd }: { records: Records; isC
           <QuickAdd title="Venue" fields={[{ key: 'name', label: 'Venue name *' }, { key: 'capacity', label: 'Capacity', type: 'number' }, { key: 'location', label: 'Location' }]} onAdd={onAdd} />
         )}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Venue</th><th className={th}>Capacity</th><th className={th}>Location</th>
               <th className={th}>Equipment</th><th className={th}>Current bookings</th><th className={th}>Availability</th>
@@ -339,9 +339,9 @@ export function CommsView({ records }: { records: Records }) {
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Communications</h1>
-      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
+      <div className="overflow-x-auto border-t border-[#E8E8E6]">
         <table className="w-full border-collapse">
-          <thead className="bg-[#F5F5F3]">
+          <thead>
             <tr>
               <th className={th}>Message</th><th className={th}>Audience</th><th className={th}>Channel</th>
               <th className={th}>Related event</th><th className={th}>Status</th><th className={th}>Source</th>
