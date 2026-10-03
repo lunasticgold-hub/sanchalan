@@ -1,4 +1,5 @@
 import { PageShell } from './site';
+import { NavLink } from '../lib/nav';
 
 const DETAILS = [
   {
@@ -47,7 +48,7 @@ export default function FeaturesPage() {
         ))}
       </div>
       <div className="mt-10 text-center">
-        <a href="/app" className="inline-block rounded-md bg-gray-900 px-6 py-2.5 text-[15px] font-medium text-white hover:bg-gray-800">Try it free</a>
+        <NavLink to="/app" className="inline-block rounded-md bg-gray-900 px-6 py-2.5 text-[15px] font-medium text-white hover:bg-gray-800">Try it free</NavLink>
       </div>
     </PageShell>
   );

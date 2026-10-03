@@ -1,5 +1,6 @@
-// Sanchalan router: marketing pages + dashboard.
+// Client-side navigation without full page reloads (preserves Supabase session).
 
+import { useEffect, useState } from 'react';
 import Dashboard from './Dashboard';
 import Landing from './views/Landing';
 import FeaturesPage from './views/FeaturesPage';
@@ -23,8 +24,23 @@ const ROUTES: Record<string, () => JSX.Element> = {
   '/changelog': ChangelogPage,
 };
 
+function usePath() {
+  const [path, setPath] = useState(() =>
+    typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') || '/' : '/'
+  );
+  useEffect(() => {
+    const onPop = () => {
+      setPath(window.location.pathname.replace(/\/$/, '') || '/');
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  return path;
+}
+
 export default function App() {
-  const path = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') || '/' : '/';
+  const path = usePath();
   if (path.startsWith('/app')) return <Dashboard />;
   const Page = ROUTES[path];
   if (Page) return <Page />;

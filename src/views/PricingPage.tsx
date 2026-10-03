@@ -1,4 +1,5 @@
 import { PageShell } from './site';
+import { NavLink } from '../lib/nav';
 
 export default function PricingPage() {
   return (
@@ -15,7 +16,7 @@ export default function PricingPage() {
             <li>✓ Risk detection</li>
             <li>✓ Community support</li>
           </ul>
-          <a href="/app" className="mt-6 block rounded-md border border-gray-300 px-4 py-2 text-center text-[14px] font-medium text-gray-700 hover:bg-gray-50">Start free</a>
+          <NavLink to="/app" className="mt-6 block rounded-md border border-gray-300 px-4 py-2 text-center text-[14px] font-medium text-gray-700 hover:bg-gray-50">Start free</NavLink>
         </div>
         <div className="rounded-lg border-2 border-gray-900 bg-white p-6">
           <div className="text-[14px] font-semibold text-gray-900">Pro</div>
@@ -28,7 +29,7 @@ export default function PricingPage() {
             <li>✓ What-if simulations</li>
             <li>✓ Priority support</li>
           </ul>
-          <a href="/app" className="mt-6 block rounded-md bg-gray-900 px-4 py-2 text-center text-[14px] font-medium text-white hover:bg-gray-800">Join waitlist</a>
+          <NavLink to="/app" className="mt-6 block rounded-md bg-gray-900 px-4 py-2 text-center text-[14px] font-medium text-white hover:bg-gray-800">Join waitlist</NavLink>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="text-[14px] font-semibold text-gray-900">Enterprise</div>
@@ -40,7 +41,7 @@ export default function PricingPage() {
             <li>✓ Dedicated onboarding</li>
             <li>✓ SLA & data residency</li>
           </ul>
-          <a href="/contact" className="mt-6 block rounded-md border border-gray-300 px-4 py-2 text-center text-[14px] font-medium text-gray-700 hover:bg-gray-50">Talk to us</a>
+          <NavLink to="/contact" className="mt-6 block rounded-md border border-gray-300 px-4 py-2 text-center text-[14px] font-medium text-gray-700 hover:bg-gray-50">Talk to us</NavLink>
         </div>
       </div>
       <p className="mt-6 text-center text-[13px] text-gray-500">Prices in INR, taxes included. Cancel anytime — your Notion data stays yours.</p>

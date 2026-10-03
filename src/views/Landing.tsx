@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Logo from '../components/Logo';
+import { NavLink } from '../lib/nav';
 
 /* Typing effect for the mockup's change input */
 function useTypewriter(phrases: string[], speed = 55, pause = 2200) {
@@ -146,10 +147,10 @@ export default function Landing() {
     <div className="min-h-screen bg-white text-gray-900 antialiased selection:bg-gray-900 selection:text-white">
       <nav className="fixed inset-x-0 top-0 z-40 border-b border-gray-100/80 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-          <a href="/" className="flex items-center gap-2.5">
+          <NavLink to="/" className="flex items-center gap-2.5">
             <Logo size={30} />
             <span className="text-[16.5px] font-bold tracking-tight">Sanchalan</span>
-          </a>
+          </NavLink>
           <div className="hidden items-center gap-8 md:flex">
             {[
               ['Features', '/features'],
@@ -157,12 +158,12 @@ export default function Landing() {
               ['About', '/about'],
               ['FAQ', '/faq'],
             ].map(([l, h]) => (
-              <a key={h} href={h} className="text-[13.5px] font-medium text-gray-500 transition-colors hover:text-gray-900">{l}</a>
+              <NavLink key={h} to={h} className="text-[13.5px] font-medium text-gray-500 transition-colors hover:text-gray-900">{l}</NavLink>
             ))}
           </div>
           <div className="flex items-center gap-2.5">
-            <a href="/app" className="rounded-lg px-4 py-2 text-[13.5px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">Sign in</a>
-            <a href="/app" className="rounded-lg bg-gray-900 px-4.5 py-2 text-[13.5px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-800 hover:shadow-md">Get started</a>
+            <NavLink to="/app" className="rounded-lg px-4 py-2 text-[13.5px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">Sign in</NavLink>
+            <NavLink to="/app" className="rounded-lg bg-gray-900 px-4.5 py-2 text-[13.5px] font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-all hover:bg-gray-800 hover:shadow-md">Get started</NavLink>
           </div>
         </div>
       </nav>
@@ -170,11 +171,11 @@ export default function Landing() {
       <section className="px-6 pb-24 pt-40">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <a href="/changelog" className="hero-anim hero-d1 group inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white py-1.5 pl-2 pr-4 text-[12.5px] font-medium text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:shadow">
+            <NavLink to="/changelog" className="hero-anim hero-d1 group inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white py-1.5 pl-2 pr-4 text-[12.5px] font-medium text-gray-600 shadow-sm transition-all hover:border-gray-300 hover:shadow">
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-800">NEW</span>
               Per-event workspaces & one-click undo
               <span className="text-gray-400 transition-transform group-hover:translate-x-0.5">→</span>
-            </a>
+            </NavLink>
             <h1 className="hero-anim hero-d2 mt-8 text-[46px] font-bold leading-[1.04] tracking-[-0.02em] md:text-[68px]">
               Notion stores the event.
               <br />
@@ -185,12 +186,12 @@ export default function Landing() {
               see the blast radius, catch the risks, and apply it with your approval. Nothing else moves.
             </p>
             <div className="hero-anim hero-d4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a href="/app" className="w-full rounded-xl bg-gray-900 px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.3)] transition-all hover:bg-gray-800 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.35)] sm:w-auto">
+              <NavLink to="/app" className="w-full rounded-xl bg-gray-900 px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.3)] transition-all hover:bg-gray-800 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.35)] sm:w-auto">
                 Start free
-              </a>
-              <a href="/features" className="w-full rounded-xl border border-gray-200 bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow sm:w-auto">
+              </NavLink>
+              <NavLink to="/features" className="w-full rounded-xl border border-gray-200 bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow sm:w-auto">
                 Explore features
-              </a>
+              </NavLink>
             </div>
             <p className="hero-anim hero-d5 mt-5 text-[12.5px] text-gray-400">Free during beta · No credit card · Your data stays in Notion</p>
           </div>
@@ -288,8 +289,8 @@ export default function Landing() {
             <h2 className="mx-auto max-w-xl text-[34px] font-bold leading-[1.15] tracking-tight text-white">Stop running your event on hope and spreadsheets.</h2>
             <p className="mx-auto mt-4 max-w-md text-[15.5px] leading-relaxed text-gray-400">Connect Notion. Describe the change. Approve with confidence.</p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a href="/app" className="rounded-xl bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-900 transition-all hover:bg-gray-100">Get started free</a>
-              <a href="/pricing" className="rounded-xl border border-gray-700 px-8 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-gray-800">View pricing</a>
+              <NavLink to="/app" className="rounded-xl bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-900 transition-all hover:bg-gray-100">Get started free</NavLink>
+              <NavLink to="/pricing" className="rounded-xl border border-gray-700 px-8 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-gray-800">View pricing</NavLink>
             </div>
           </div>
         </div>
@@ -313,7 +314,7 @@ export default function Landing() {
               <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-400">{h}</div>
               <div className="mt-4 space-y-2.5">
                 {(links as [string, string][]).map(([l, href]) => (
-                  <a key={href} href={href} className="block text-[13.5px] text-gray-500 transition-colors hover:text-gray-900">{l}</a>
+                  <NavLink key={href} to={href} className="block text-[13.5px] text-gray-500 transition-colors hover:text-gray-900">{l}</NavLink>
                 ))}
               </div>
             </div>
