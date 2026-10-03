@@ -11,9 +11,9 @@ function Nav() {
           <span className="text-[16px] font-bold tracking-tight text-gray-900">Sanchalan</span>
         </div>
         <div className="hidden items-center gap-6 md:flex">
-          <a href="#features" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">Features</a>
-          <a href="#how" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">How it works</a>
-          <a href="#pricing" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">Pricing</a>
+          <a href="/features" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">Features</a>
+          <a href="/#how" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">How it works</a>
+          <a href="/pricing" className="text-[13px] font-medium text-gray-600 hover:text-gray-900">Pricing</a>
         </div>
         <div className="flex items-center gap-2">
           <a href="/app" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-100">Sign in</a>
@@ -42,7 +42,7 @@ function Hero() {
           <a href="/app" className="rounded-md bg-gray-900 px-6 py-2.5 text-[15px] font-medium text-white hover:bg-gray-800">
             Start free
           </a>
-          <a href="#how" className="rounded-md border border-gray-300 px-6 py-2.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50">
+          <a href="/#how" className="rounded-md border border-gray-300 px-6 py-2.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50">
             See how it works
           </a>
         </div>
