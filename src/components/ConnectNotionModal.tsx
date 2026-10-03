@@ -49,6 +49,9 @@ export default function ConnectNotionModal({
   const [syncErr, setSyncErr] = useState('');
   const [done, setDone] = useState<number | null>(null);
   const [autoTried, setAutoTried] = useState(false);
+  const [mode, setMode] = useState<'link' | 'token'>('link');
+  const [pageLink, setPageLink] = useState('');
+  const [pageTitle, setPageTitle] = useState('');
 
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
   const matchDb = (expected: string) =>
@@ -76,8 +79,30 @@ export default function ConnectNotionModal({
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error ?? 'Discovery failed');
       setDiscovered(data.databases ?? []);
+      setPageTitle('');
     } catch (e: any) {
       setDiscoverErr(e.message ?? 'Could not reach Notion. Check the token.');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const discoverFromLink = async () => {
+    if (!token.trim() || !pageLink.trim()) return;
+    setDiscovering(true);
+    setDiscoverErr('');
+    try {
+      const resp = await fetch('/api/discover-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token.trim(), pageIdOrUrl: pageLink.trim() }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error ?? 'Discovery failed');
+      setDiscovered(data.databases ?? []);
+      setPageTitle(data.pageTitle ?? '');
+    } catch (e: any) {
+      setDiscoverErr(e.message ?? 'Could not read that page. Check the link and sharing.');
     } finally {
       setDiscovering(false);
     }
@@ -116,7 +141,7 @@ export default function ConnectNotionModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="text-[16px] font-semibold text-gray-900">Connect Notion</div>
-        <p className="mt-1 text-[13px] text-gray-500">Paste your integration token. Sanchalan finds your databases and pulls the data.</p>
+        <p className="mt-1 text-[13px] text-gray-500">Paste a Notion page link — Sanchalan finds all databases on it automatically.</p>
 
         {done !== null ? (
           <div className="mt-4 rounded-lg bg-green-50 p-4 text-center">
@@ -125,34 +150,75 @@ export default function ConnectNotionModal({
           </div>
         ) : (
           <div className="mt-4 space-y-4">
+            {/* Mode tabs */}
+            <div className="flex rounded-lg bg-gray-100 p-1">
+              <button
+                onClick={() => setMode('link')}
+                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'link' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+              >
+                Paste page link
+              </button>
+              <button
+                onClick={() => setMode('token')}
+                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'token' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+              >
+                Browse all databases
+              </button>
+            </div>
+
             <div>
               <label className="mb-1 block text-[13px] font-medium text-gray-700">Notion integration token</label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="ntn_..."
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-[13px] outline-none focus:border-gray-500"
-                />
+              <input
+                type="password"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="ntn_..."
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-[13px] outline-none focus:border-gray-500"
+              />
+            </div>
+
+            {mode === 'link' ? (
+              <div>
+                <label className="mb-1 block text-[13px] font-medium text-gray-700">Notion page link</label>
+                <div className="flex gap-2">
+                  <input
+                    value={pageLink}
+                    onChange={(e) => setPageLink(e.target.value)}
+                    placeholder="https://notion.so/..."
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-[13px] outline-none focus:border-gray-500"
+                  />
+                  <button
+                    onClick={discoverFromLink}
+                    disabled={!token.trim() || !pageLink.trim() || discovering}
+                    className="rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-40"
+                  >
+                    {discovering ? 'Reading…' : 'Find databases'}
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[12px] text-gray-500">
+                  Copy the link of the Notion page holding your databases. Share just that <strong>one page</strong> with your integration: open it → ••• → Add connections.
+                </p>
+              </div>
+            ) : (
+              <div>
                 <button
                   onClick={discover}
                   disabled={!token.trim() || discovering}
-                  className="rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-40"
+                  className="w-full rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-40"
                 >
-                  {discovering ? 'Finding…' : 'Find databases'}
+                  {discovering ? 'Finding…' : 'Find all my databases'}
                 </button>
+                <p className="mt-1.5 text-[12px] text-gray-500">
+                  Searches your whole workspace. Share each database first: open it → ••• → Add connections.
+                </p>
               </div>
-              <p className="mt-1.5 text-[12px] text-gray-500">
-                Notion → Settings → Integrations → New integration → copy token. Then share each database: open it → ••• → Add connections.
-              </p>
-              {discoverErr && <p className="mt-2 text-[13px] text-red-600">{discoverErr}</p>}
-            </div>
+            )}
+            {discoverErr && <p className="mt-2 text-[13px] text-red-600">{discoverErr}</p>}
 
             {discovered && (
               <div>
                 <div className="mb-2 text-[13px] font-medium text-gray-700">
-                  Found {discovered.length} database{discovered.length === 1 ? '' : 's'}
+                  Found {discovered.length} database{discovered.length === 1 ? '' : 's'}{pageTitle ? ` on "${pageTitle}"` : ''}
                 </div>
                 <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
                   {EXPECTED.map(([key, expected]) => {
