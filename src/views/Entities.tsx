@@ -6,7 +6,7 @@ import type { Records } from '../lib/types';
 import type { Maps } from './Changes';
 import { Badge, cx, statusTone, td, th, tr } from '../components/ui';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 function Drawer({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   // Only close when the press starts AND ends on the backdrop.
