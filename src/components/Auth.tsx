@@ -7,6 +7,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -57,15 +58,25 @@ export default function Auth({ onDone }: { onDone: () => void }) {
             autoComplete="email"
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
           />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
-          />
+          <div className="relative">
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+              onKeyDown={(e) => e.key === 'Enter' && submit()}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-[14px] focus:border-gray-900 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[12px] font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              title={showPw ? 'Hide password' : 'Show password'}
+            >
+              {showPw ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </div>
 
         {err && <p className="mt-3 text-[13px] font-medium text-red-700">{err}</p>}

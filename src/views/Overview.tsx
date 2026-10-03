@@ -24,13 +24,18 @@ export default function Overview({
   changes,
   setView,
   onReview,
+  activeEvent,
 }: {
   records: Records;
   changes: ChangeRequest[];
   setView: (v: View) => void;
   onReview: (id: string) => void;
+  activeEvent?: { id: string; name: string; date?: string; location?: string; organizer?: string } | null;
 }) {
-  const event = records.events[0];
+  const notionEvent = records.events[0];
+  const event = activeEvent && activeEvent.id.startsWith('custom-')
+    ? { name: activeEvent.name, date: activeEvent.date ?? '', organizer: activeEvent.organizer ?? activeEvent.location ?? '' }
+    : notionEvent;
   const pending = changes.filter((c) => c.status === 'analyzed');
   const latestPlan = [...changes].reverse().find((c) => c.plan)?.plan ?? null;
   const risks = latestPlan?.risks ?? [];

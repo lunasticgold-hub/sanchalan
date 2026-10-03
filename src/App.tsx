@@ -118,7 +118,11 @@ export default function App() {
   const [palette, setPalette] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string>('');
   const [showAddEvent, setShowAddEvent] = useState(false);
-  const [customEvents, setCustomEvents] = useState<{ id: string; name: string }[]>([]);
+  const [customEvents, setCustomEvents] = useState<{ id: string; name: string; date?: string; location?: string; expectedAttendees?: string; organizer?: string; description?: string }[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('sanchalan_custom_events') ?? '[]');
+    } catch { return []; }
+  });
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [authChecked, setAuthChecked] = useState(!supabaseConfigured);
 
@@ -269,7 +273,13 @@ export default function App() {
           )}
 
           {view === 'overview' && (
-            <Overview records={records} changes={changes} setView={setView} onReview={reviewChange} />
+            <Overview
+              records={records}
+              changes={changes}
+              setView={setView}
+              onReview={reviewChange}
+              activeEvent={events.find((e) => e.id === activeEventId) ?? null}
+            />
           )}
           {view === 'live' && <Live records={records} changes={changes} />}
           {view === 'preflight' && <Preflight records={records} setView={setView} />}
@@ -323,14 +333,18 @@ export default function App() {
       {palette && <CommandPalette records={records} onGo={goView} onClose={() => setPalette(false)} />}
 
       {showAddEvent && (
-        <AddEventModal
+        <AddEventWizard
           onClose={() => setShowAddEvent(false)}
-          onAdd={(name) => {
+          onAdd={(evt) => {
             const id = `custom-${Date.now()}`;
-            setCustomEvents((cs) => [...cs, { id, name }]);
+            const full = { id, ...evt };
+            setCustomEvents((cs) => [...cs, full]);
+            try {
+              localStorage.setItem('sanchalan_custom_events', JSON.stringify([...customEvents, full]));
+            } catch {}
             setActiveEventId(id);
             setShowAddEvent(false);
-            setView('notion');
+            setView('overview');
           }}
         />
       )}
@@ -338,31 +352,126 @@ export default function App() {
   );
 }
 
-function AddEventModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name: string) => void }) {
-  const [name, setName] = useState('');
+interface NewEventData {
+  name: string;
+  date: string;
+  location: string;
+  expectedAttendees: string;
+  organizer: string;
+  description: string;
+}
+
+function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: NewEventData) => void }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState<NewEventData>({ name: '', date: '', location: '', expectedAttendees: '', organizer: '', description: '' });
+  const [token, setToken] = useState('');
+  const set = (k: keyof NewEventData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const canNext1 = form.name.trim() && form.date.trim() && form.location.trim();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-[16px] font-semibold text-gray-900">Add your event</h2>
-        <p className="mt-1 text-[13px] text-gray-600">
-          Give your event a name. Then connect your Notion workspace so Sanchalan can read your event data.
-        </p>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Design Conf 2026"
-          className="mt-4 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
-          autoFocus
-        />
-        <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
-          <button
-            onClick={() => name.trim() && onAdd(name.trim())}
-            disabled={!name.trim()}
-            className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
-          >
-            Continue
-          </button>
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-1 text-[16px] font-semibold text-gray-900">Add your event</div>
+        <div className="mb-5 text-[12px] font-medium text-gray-500">Step {step} of 4</div>
+
+        {step === 1 && (
+          <div className="space-y-3">
+            <div className="text-[13px] font-semibold text-gray-800">Event details</div>
+            <input value={form.name} onChange={set('name')} placeholder="Event name *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+            <div className="grid grid-cols-2 gap-3">
+              <input value={form.date} onChange={set('date')} type="date" className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+              <input value={form.location} onChange={set('location')} placeholder="Venue / City *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <input value={form.expectedAttendees} onChange={set('expectedAttendees')} type="number" placeholder="Expected attendees" className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+              <input value={form.organizer} onChange={set('organizer')} placeholder="Organizer" className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+            </div>
+            <textarea value={form.description} onChange={set('description')} placeholder="Short description (optional)" rows={2} className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none" />
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-3">
+            <div className="text-[13px] font-semibold text-gray-800">Connect the coordinator's Notion</div>
+            <p className="text-[13px] text-gray-600">Sanchalan reads and writes your event data in Notion. Three quick steps:</p>
+            {[
+              'Create an integration at notion.so/my-integrations and copy the secret (starts with ntn_).',
+              'In Notion, open each event database → ••• → Add connections → pick your integration.',
+              'Paste the token below.',
+            ].map((t, i) => (
+              <div key={i} className="flex gap-2 text-[13px] text-gray-700">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-bold">{i + 1}</span>
+                {t}
+              </div>
+            ))}
+            <input
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              type="password"
+              placeholder="ntn_… or secret_… (optional for now)"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+            />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-3">
+            <div className="text-[13px] font-semibold text-gray-800">Databases Sanchalan needs</div>
+            <p className="text-[13px] text-gray-600">Your Notion workspace should have these 11 databases. Sanchalan maps to them by name:</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {['Events', 'Venues', 'Sessions', 'Volunteers', 'Tasks', 'Communications', 'Impact Reports', 'Attendees', 'Speakers', 'Sponsors', 'Risks'].map((d) => (
+                <div key={d} className="rounded-md bg-gray-50 px-3 py-1.5 text-[12px] font-medium text-gray-700">{d}</div>
+              ))}
+            </div>
+            <p className="text-[12px] text-gray-500">Don't have them yet? Duplicate our template workspace, or let Sanchalan work with whatever databases you share — it adapts to what's there.</p>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-3">
+            <div className="text-[13px] font-semibold text-gray-800">Ready to go</div>
+            <div className="rounded-md bg-gray-50 p-3 text-[13px] text-gray-700 space-y-1">
+              <div><span className="font-medium">Event:</span> {form.name}</div>
+              <div><span className="font-medium">Date:</span> {form.date || '—'}</div>
+              <div><span className="font-medium">Location:</span> {form.location}</div>
+              {form.expectedAttendees && <div><span className="font-medium">Expected:</span> {form.expectedAttendees} attendees</div>}
+              {form.organizer && <div><span className="font-medium">Organizer:</span> {form.organizer}</div>}
+              <div><span className="font-medium">Notion:</span> {token.trim() ? 'Token saved ✓' : 'Connect later from Workspace settings'}</div>
+            </div>
+            <p className="text-[13px] text-gray-600">Once added, run Pre-flight to check readiness, use Changes for operational updates, and Simulate for what-ifs.</p>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-between">
+          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-500 hover:bg-gray-100">Cancel</button>
+          <div className="flex gap-2">
+            {step > 1 && (
+              <button onClick={() => setStep(step - 1)} className="rounded-md border border-gray-300 px-4 py-1.5 text-[13px] font-medium text-gray-700">Back</button>
+            )}
+            {step < 4 ? (
+              <button
+                onClick={() => setStep(step + 1)}
+                disabled={step === 1 && !canNext1}
+                className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (token.trim()) {
+                    try { localStorage.setItem('sanchalan_notion_token', token.trim()); } catch {}
+                  }
+                  onAdd(form);
+                }}
+                className="rounded-md bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white"
+              >
+                Add event
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
