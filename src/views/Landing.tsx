@@ -1,6 +1,6 @@
 // Sanchalan landing — editorial, Supabase-grade.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Logo from '../components/Logo';
 import { NavLink } from '../lib/nav';
 
@@ -28,29 +28,6 @@ function useTypewriter(phrases: string[], speed = 55, pause = 2400) {
     return () => { cancelled = true; clearTimeout(timer); };
   }, []);
   return { text, done };
-}
-
-function CountUp({ to, suffix = '', dark = false }: { to: number; suffix?: string; dark?: boolean }) {
-  const [n, setN] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      obs.disconnect();
-      const t0 = performance.now(), dur = 1500;
-      const step = (t: number) => {
-        const p = Math.min(1, (t - t0) / dur);
-        setN(Math.round(to * (1 - Math.pow(1 - p, 3))));
-        if (p < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-    }, { threshold: 0.4 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [to]);
-  return <div ref={ref} className={`text-[40px] font-bold tabular-nums tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>{n}{suffix}</div>;
 }
 
 /* ---------- Product mockup ---------- */
@@ -121,44 +98,6 @@ function DashboardMock() {
   );
 }
 
-/* ---------- Dotted number visual (like Supabase 111K) ---------- */
-function DottedNumber({ text }: { text: string }) {
-  // 5x7 dot matrix for digits
-  const FONT: Record<string, number[]> = {
-    '0': [0x7E, 0x81, 0x81, 0x81, 0x81, 0x81, 0x7E],
-    '1': [0x00, 0x42, 0x7F, 0x40, 0x00, 0x00, 0x00],
-    '2': [0x42, 0x61, 0x51, 0x49, 0x49, 0x46, 0x00],
-    '+': [0x00, 0x08, 0x08, 0x3E, 0x08, 0x08, 0x00],
-  };
-  const chars = text.split('');
-  return (
-    <div className="flex gap-3">
-      {chars.map((ch, ci) => (
-        <div key={ci} className="grid grid-cols-7 gap-[5px]">
-          {(FONT[ch] ?? FONT['0']).map((col, r) => (
-            <div key={r} className="flex flex-col gap-[5px]">
-              {[6, 5, 4, 3, 2, 1, 0].map((b) => (
-                <div
-                  key={b}
-                  className={`h-[7px] w-[7px] rounded-full ${(col >> b) & 1 ? 'bg-emerald-400' : 'bg-gray-800'}`}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ---------- Social proof cards ---------- */
-const TWEETS = [
-  { name: 'Event Coordinator', handle: '@bbsrmeetup', text: 'Moved 200 attendees to a new venue at 9pm. Sanchalan caught the overflow, reassigned volunteers, drafted the announcement — before my coffee was done.' },
-  { name: 'Aditya Kumar', handle: '@aditya', text: 'The blast radius view is what sold me. Type a change, see everything it touches. No more "oh no we forgot the volunteers" moments.' },
-  { name: 'Akshit Sinha', handle: '@akshit', text: 'Finally, a tool that treats Notion as the database and adds the operations layer on top. Approval gates for every write. This is how it should work.' },
-  { name: 'Hackathon Judge', handle: '@kbc2026', text: 'Most demos show a UI. These folks showed a full loop: analyze → approve → execute → audit. On real Notion data. Impressive.' },
-];
-
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white text-gray-900 antialiased selection:bg-gray-900 selection:text-white">
@@ -210,53 +149,6 @@ export default function Landing() {
           </div>
           <div className="hero-anim hero-d6 mx-auto mt-16 max-w-4xl">
             <DashboardMock />
-          </div>
-        </div>
-      </section>
-
-      {/* Social proof wall */}
-      <section className="border-b border-gray-100 bg-white px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-10 text-center text-[12px] font-bold uppercase tracking-[0.14em] text-gray-400">Loved by event organizers</div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {TWEETS.map((t) => (
-              <div key={t.handle} className="rounded-2xl border border-gray-150 bg-gray-50/50 p-5">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-[13px] font-bold text-white">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-semibold text-gray-900">{t.name}</div>
-                    <div className="text-[12px] text-gray-400">{t.handle}</div>
-                  </div>
-                </div>
-                <p className="mt-3 text-[13.5px] leading-relaxed text-gray-600">{t.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats — dark editorial */}
-      <section className="bg-[#0a0a0b] px-6 py-24">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          <div>
-            <h2 className="text-[36px] font-bold leading-[1.1] tracking-tight text-white">Built for the chaos<br />of event day.</h2>
-            <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-gray-400">
-              Notion is where your plan lives. Sanchalan is what keeps it alive when reality hits —
-              the venue floods, the speaker cancels, 500 people show up instead of 200.
-            </p>
-            <NavLink to="/features" className="mt-7 inline-flex items-center gap-2 rounded-xl border border-gray-800 px-5 py-2.5 text-[14px] font-semibold text-gray-300 transition-all hover:border-gray-700 hover:text-white">
-              See all features <span>→</span>
-            </NavLink>
-          </div>
-          <div className="flex flex-col items-start gap-8">
-            <DottedNumber text="11+" />
-            <div className="grid grid-cols-3 gap-8">
-              <div><CountUp to={200} suffix="+" dark /><div className="mt-1 text-[12.5px] text-gray-500">attendees managed</div></div>
-              <div><CountUp to={5} dark /><div className="mt-1 text-[12.5px] text-gray-500">sec to blast radius</div></div>
-              <div><CountUp to={0} dark /><div className="mt-1 text-[12.5px] text-gray-500">unapproved writes</div></div>
-            </div>
           </div>
         </div>
       </section>
