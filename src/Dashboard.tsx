@@ -104,7 +104,7 @@ export default function Dashboard() {
   const [activeEventId, setActiveEventId] = useState<string>('');
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [customEvents, setCustomEvents] = useState<{ id: string; name: string; date?: string; location?: string; expectedAttendees?: string; organizer?: string; description?: string }[]>([]);
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; name?: string } | null>(null);
   const [authChecked, setAuthChecked] = useState(!supabaseConfigured);
   const [customData, setCustomData] = useState<Record<string, Records>>({});
 
@@ -142,12 +142,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return;
+    const toUser = (u: any) =>
+      u?.email ? { email: u.email, name: u.user_metadata?.full_name ?? undefined } : null;
     supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user?.email ? { email: data.session.user.email } : null);
+      setUser(toUser(data.session?.user));
       setAuthChecked(true);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user?.email ? { email: session.user.email } : null);
+      setUser(toUser(session?.user));
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -195,6 +197,21 @@ export default function Dashboard() {
       setSyncing(false);
     }
   };
+
+  // The active custom event's Notion credentials (token + database mapping),
+  // read from per-account storage. Undefined for the demo event (server fallback).
+  const activeNotionCreds = (() => {
+    if (!activeEventId || !isCustomEvent(activeEventId)) return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+    try {
+      migrateLegacyKey(`notion_map_${activeEventId}`);
+      const raw = localStorage.getItem(scopedKey(`notion_map_${activeEventId}`));
+      if (!raw) return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+      const parsed = JSON.parse(raw);
+      return { token: parsed.token as string | undefined, databases: parsed.databases as Record<string, string> | undefined };
+    } catch {
+      return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+    }
+  })();
 
   // Merge freshly pulled Notion records over existing ones, preserving
   // records created locally in Sanchalan (id starts with 'local-').
@@ -474,7 +491,9 @@ export default function Dashboard() {
               setChanges={setChanges}
               refreshRecords={load}
               onViewImpact={gotoImpact}
-              operatorName={user?.email ?? undefined}
+              operatorName={user?.name || user?.email || undefined}
+              notionToken={activeNotionCreds.token}
+              notionDatabases={activeNotionCreds.databases}
             />
           )}
           {view === 'simulate' && <Simulate records={activeRecords} onConvert={convertScenario} />}

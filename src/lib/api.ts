@@ -122,8 +122,12 @@ export async function parseUpdate(text: string): Promise<ParsedChange & { via?: 
   }
 }
 
-export async function applyPlan(plan: ImpactPlan, archive?: { pageId: string }[]): Promise<{ updated: number; created: { db: string; url: string; id?: string }[]; archived?: string[] }> {
-  return post('/api/apply', { plan, archive: archive ?? [] });
+export async function applyPlan(
+  plan: ImpactPlan,
+  archive?: { pageId: string }[],
+  opts?: { token?: string; databases?: Record<string, string> }
+): Promise<{ updated: number; created: { db: string; url: string; id?: string }[]; archived?: string[] }> {
+  return post('/api/apply', { plan, archive: archive ?? [], token: opts?.token, databases: opts?.databases });
 }
 
 export async function askQuestion(question: string, records: Records) {

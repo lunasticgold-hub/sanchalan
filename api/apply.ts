@@ -108,8 +108,11 @@ function draftToNotionProps(db: string, draft: Record<string, any>): Record<stri
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const token = process.env.NOTION_TOKEN;
+  // Custom workspaces pass their own integration token + database mapping
+  // (same pattern as /api/query). Falls back to the demo workspace.
+  const token = req.body?.token || process.env.NOTION_TOKEN;
   if (!token) return res.status(501).json({ error: 'NOTION_TOKEN not configured' });
+  const dbIds: Record<string, string> = { ...DB_IDS, ...(req.body?.databases ?? {}) };
 
   const plan = req.body?.plan as any;
   if (!plan) return res.status(400).json({ error: 'Missing plan' });
@@ -119,7 +122,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     for (const u of plan.updates ?? []) {
-      if (!DB_IDS[u.db]) continue;
+      if (!dbIds[u.db]) continue;
       await nfetch(token, `/pages/${u.pageId}`, 'PATCH', { properties: toNotionProps(u.db, u.props ?? {}) });
       updated++;
     }
@@ -129,10 +132,10 @@ export default async function handler(req: any, res: any) {
       ...(plan.newImpactReports ?? []).map((d: any) => ({ db: 'impactReports', draft: d })),
     ];
     for (const c of creates) {
-      if (!DB_IDS[c.db]) continue;
+      if (!dbIds[c.db]) continue;
       const props = draftToNotionProps(c.db, { ...c.draft, source: c.draft.source || SRC_AI });
       const page: any = await nfetch(token, '/pages', 'POST', {
-        parent: { database_id: DB_IDS[c.db] },
+        parent: { database_id: dbIds[c.db] },
         properties: props,
       });
       created.push({ db: c.db, url: page.url ?? '', id: page.id ?? '' });

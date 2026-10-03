@@ -7,6 +7,7 @@ import Logo from './Logo';
 export default function Auth({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
@@ -44,7 +45,11 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         if (error) throw error;
         onDone();
       } else {
-        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { full_name: fullName.trim() } },
+        });
         if (error) throw error;
         // If email confirmation is on, there'll be no session yet
         if (!data.session) {
@@ -226,6 +231,16 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         </div>
 
         <div className="mt-4 space-y-3">
+          {mode === 'up' && (
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Full name"
+              autoComplete="name"
+              className="w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+            />
+          )}
           <input
             type="email"
             value={email}
@@ -259,7 +274,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
 
         <button
           onClick={submit}
-          disabled={busy || !email.trim() || !password}
+          disabled={busy || !email.trim() || !password || (mode === 'up' && !fullName.trim())}
           className="mt-4 w-full rounded-md bg-[#191919] px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
         >
           {busy ? 'Please wait…' : mode === 'in' ? 'Sign in' : 'Create account'}

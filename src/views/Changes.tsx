@@ -27,6 +27,8 @@ interface Props {
   onViewImpact: (id: string) => void;
   initialActiveId?: string | null;
   operatorName?: string;
+  notionToken?: string;
+  notionDatabases?: Record<string, string>;
 }
 
 const FALLBACK_OPERATOR = 'Abhigyan Rai';
@@ -195,7 +197,7 @@ function scrollTo(id: string) {
 
 // ---------- main view ----------
 
-export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId, operatorName }: Props) {
+export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId, operatorName, notionToken, notionDatabases }: Props) {
   const OPERATOR = operatorName ?? FALLBACK_OPERATOR;
   const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null);
   const [showNew, setShowNew] = useState(false);
@@ -278,7 +280,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
     setApplyError('');
     setExecLog(['Validating change plan…']);
     try {
-      const res = await applyPlan(active.plan);
+      const res = await applyPlan(active.plan, undefined, { token: notionToken, databases: notionDatabases });
       const plan = active.plan;
       const log = [
         `Updated ${plan.updates.filter((u) => u.db === 'sessions').length} session(s)`,
@@ -332,7 +334,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
       }));
       // 2. Archive created pages
       const archive = active.rollback.createdIds.map((c) => ({ pageId: c.pageId }));
-      await applyPlan({ updates: reverseUpdates, newTasks: [], newComms: [], newImpactReports: [], risks: [], summary: '' } as any, archive);
+      await applyPlan({ updates: reverseUpdates, newTasks: [], newComms: [], newImpactReports: [], risks: [], summary: '' } as any, archive, { token: notionToken, databases: notionDatabases });
       setExecLog(['Reverted updated records', `Archived ${archive.length} created record(s)`, 'Notion synced']);
       patchChange(id, { status: 'undone', undoneAt: new Date().toISOString() });
       await refreshRecords();
