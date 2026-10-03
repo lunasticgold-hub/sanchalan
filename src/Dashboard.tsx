@@ -22,6 +22,7 @@ import Auth from './components/Auth';
 import Logo from './components/Logo';
 import { supabase, supabaseConfigured } from './lib/supabase';
 import { emptyRecords, isCustomEvent, loadCustomRecords, saveCustomRecords } from './lib/eventData';
+import { migrateLegacyKey, scopedKey, setScopeEmail } from './lib/userScope';
 
 const OPERATOR = 'Abhigyan Rai';
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -102,11 +103,7 @@ export default function Dashboard() {
   const [palette, setPalette] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string>('');
   const [showAddEvent, setShowAddEvent] = useState(false);
-  const [customEvents, setCustomEvents] = useState<{ id: string; name: string; date?: string; location?: string; expectedAttendees?: string; organizer?: string; description?: string }[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('sanchalan_custom_events') ?? '[]');
-    } catch { return []; }
-  });
+  const [customEvents, setCustomEvents] = useState<{ id: string; name: string; date?: string; location?: string; expectedAttendees?: string; organizer?: string; description?: string }[]>([]);
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [authChecked, setAuthChecked] = useState(!supabaseConfigured);
   const [customData, setCustomData] = useState<Record<string, Records>>({});
@@ -155,6 +152,23 @@ export default function Dashboard() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Per-account storage: events belong to the signed-in account, so a
+  // different login on the same browser starts with a clean slate.
+  const userEmail = user?.email ?? null;
+  useEffect(() => {
+    setScopeEmail(userEmail);
+    migrateLegacyKey('custom_events');
+    migrateLegacyKey('notion_token');
+    let evts: { id: string; name: string }[] = [];
+    try {
+      evts = JSON.parse(localStorage.getItem(scopedKey('custom_events')) ?? '[]');
+    } catch { evts = []; }
+    setCustomEvents(evts as any);
+    setCustomData({});
+    setActiveEventId('');
+    setView('overview');
+  }, [userEmail]);
+
   const events = useMemo(() => {
     const fromRecords = (records?.events ?? []).map((e) => ({ id: e.id, name: e.name }));
     return [...fromRecords, ...customEvents];
@@ -201,7 +215,8 @@ export default function Dashboard() {
   const syncCustomEvent = useCallback(async (eventId: string) => {
     let mapping: { token: string; databases: Record<string, string> } | null = null;
     try {
-      const raw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      migrateLegacyKey(`notion_map_${eventId}`);
+      const raw = localStorage.getItem(scopedKey(`notion_map_${eventId}`));
       if (raw) mapping = JSON.parse(raw);
     } catch { /* ignore */ }
     if (!mapping?.token) return false;
@@ -353,7 +368,7 @@ export default function Dashboard() {
               const full = { id, ...evt };
               setCustomEvents((cs) => [...cs, full]);
               try {
-                localStorage.setItem('sanchalan_custom_events', JSON.stringify([...customEvents, full]));
+                localStorage.setItem(scopedKey('custom_events'), JSON.stringify([...customEvents, full]));
               } catch {}
               setActiveEventId(id);
               setShowAddEvent(false);
@@ -508,7 +523,7 @@ export default function Dashboard() {
             const full = { id, ...evt };
             setCustomEvents((cs) => [...cs, full]);
             try {
-              localStorage.setItem('sanchalan_custom_events', JSON.stringify([...customEvents, full]));
+              localStorage.setItem(scopedKey('custom_events'), JSON.stringify([...customEvents, full]));
             } catch {}
             setActiveEventId(id);
             setShowAddEvent(false);
@@ -688,7 +703,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
               <button
                 onClick={() => {
                   if (token.trim()) {
-                    try { localStorage.setItem('sanchalan_notion_token', token.trim()); } catch {}
+                    try { localStorage.setItem(scopedKey('notion_token'), token.trim()); } catch {}
                   }
                   const newEvent = onAdd(form);
                   // Save Notion mapping for this custom event
@@ -713,7 +728,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
                       if (m) mapping[keyMap[expected]] = m.id;
                     });
                     try {
-                      localStorage.setItem(`sanchalan_notion_map_${newEvent.id}`, JSON.stringify({ token: token.trim(), databases: mapping }));
+                      localStorage.setItem(scopedKey(`notion_map_${newEvent.id}`), JSON.stringify({ token: token.trim(), databases: mapping }));
                     } catch {}
                   }
                 }}

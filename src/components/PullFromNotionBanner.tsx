@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { fetchCustomWorkspace } from '../lib/api';
+import { migrateLegacyKey, scopedKey } from '../lib/userScope';
 import { emptyRecords } from '../lib/eventData';
 import type { Records } from '../lib/types';
 import type { View } from '../components/Sidebar';
@@ -24,7 +25,8 @@ export default function PullFromNotionBanner({
 
   const hasMapping = (() => {
     try {
-      const raw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      migrateLegacyKey(`notion_map_${eventId}`);
+      const raw = localStorage.getItem(scopedKey(`notion_map_${eventId}`));
       return Boolean(raw && JSON.parse(raw)?.token);
     } catch {
       return false;
@@ -35,7 +37,8 @@ export default function PullFromNotionBanner({
     setPulling(true);
     setErr('');
     try {
-      const raw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      migrateLegacyKey(`notion_map_${eventId}`);
+      const raw = localStorage.getItem(scopedKey(`notion_map_${eventId}`));
       if (!raw) throw new Error('No Notion connection found for this event.');
       const { token, databases } = JSON.parse(raw);
       const pulled = await fetchCustomWorkspace(token, databases);

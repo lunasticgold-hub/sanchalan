@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Badge, Btn, Linkify, SectionTitle, cx, fmtDateTime } from '../components/ui';
 import { DB_TITLES } from '../config';
 import type { DbKey } from '../lib/types';
+import { migrateLegacyKey, scopedKey } from '../lib/userScope';
 
 const DB_KEYS: DbKey[] = ['venues', 'events', 'sessions', 'volunteers', 'tasks', 'comms', 'impactReports', 'attendees', 'speakers', 'sponsors', 'risks'];
 
@@ -42,12 +43,13 @@ export default function NotionStatus({
   const connect = () => {
     const t = token.trim();
     if (!t.startsWith('ntn_') && !t.startsWith('secret_')) return;
-    localStorage.setItem('sanchalan_notion_token', t);
+    migrateLegacyKey('notion_token');
+    localStorage.setItem(scopedKey('notion_token'), t);
     setCustomConnected(true);
   };
 
   const disconnect = () => {
-    localStorage.removeItem('sanchalan_notion_token');
+    localStorage.removeItem(scopedKey('notion_token'));
     setCustomConnected(false);
     setToken('');
   };

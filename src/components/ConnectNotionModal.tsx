@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { fetchCustomWorkspace } from '../lib/api';
 import { emptyRecords } from '../lib/eventData';
 import type { Records } from '../lib/types';
+import { migrateLegacyKey, scopedKey } from '../lib/userScope';
 
 const EXPECTED = [
   ['events', 'Events'],
@@ -32,12 +33,14 @@ export default function ConnectNotionModal({
   const [token, setToken] = useState(() => {
     // Pre-fill from saved token: this event's mapping first, then global
     try {
-      const eventRaw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      migrateLegacyKey(`notion_map_${eventId}`);
+      const eventRaw = localStorage.getItem(scopedKey(`notion_map_${eventId}`));
       if (eventRaw) {
         const t = JSON.parse(eventRaw)?.token;
         if (t) return t;
       }
-      return localStorage.getItem('sanchalan_notion_token') ?? '';
+      migrateLegacyKey('notion_token');
+      return localStorage.getItem(scopedKey('notion_token')) ?? '';
     } catch {
       return '';
     }
@@ -121,8 +124,8 @@ export default function ConnectNotionModal({
       if (Object.keys(mapping).length === 0) throw new Error('No databases matched. Check the names.');
       // Save mapping for this event + remember token globally
       try {
-        localStorage.setItem(`sanchalan_notion_map_${eventId}`, JSON.stringify({ token: token.trim(), databases: mapping }));
-        localStorage.setItem('sanchalan_notion_token', token.trim());
+        localStorage.setItem(scopedKey(`notion_map_${eventId}`), JSON.stringify({ token: token.trim(), databases: mapping }));
+        localStorage.setItem(scopedKey('notion_token'), token.trim());
       } catch {}
       // Pull data
       const pulled = await fetchCustomWorkspace(token.trim(), mapping);

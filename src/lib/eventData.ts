@@ -2,6 +2,7 @@
 // custom events use localStorage-backed records (start empty, user adds).
 
 import type { Records } from './types';
+import { migrateLegacyKey, scopedKey } from './userScope';
 
 export function emptyRecords(): Records {
   return {
@@ -10,7 +11,10 @@ export function emptyRecords(): Records {
   };
 }
 
-const key = (eventId: string) => `sanchalan_event_data_${eventId}`;
+const key = (eventId: string) => {
+  migrateLegacyKey(`event_data_${eventId}`);
+  return scopedKey(`event_data_${eventId}`);
+};
 
 export function loadCustomRecords(eventId: string): Records {
   try {
