@@ -1,7 +1,7 @@
 // Sanchalan — operations shell.
 // Sidebar nav + views. Notion is the system of record; demo data fallback when offline.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar, { type View } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Overview from './views/Overview';
@@ -15,7 +15,7 @@ import { AttendeesView, SpeakersView, SponsorsView } from './views/Entities';
 import Risks from './views/Risks';
 import ImpactReports from './views/ImpactReports';
 import NotionStatus from './views/NotionStatus';
-import { fetchAllRecords } from './lib/api';
+import { fetchAllRecords, fetchCustomWorkspace } from './lib/api';
 import type { ChangeRequest, Records } from './lib/types';
 import { Linkify } from './components/ui';
 import Auth from './components/Auth';
@@ -182,9 +182,99 @@ export default function Dashboard() {
     }
   };
 
+  // Merge freshly pulled Notion records over existing ones, preserving
+  // records created locally in Sanchalan (id starts with 'local-').
+  const mergePulled = (current: Records, pulled: Partial<Records>): Records => {
+    const next = { ...current };
+    (Object.keys(pulled) as (keyof Records)[]).forEach((k) => {
+      const fresh = ((pulled[k] as { id: string }[] | undefined) ?? []);
+      const freshIds = new Set(fresh.map((x) => x.id));
+      const localOnly = ((current[k] as { id: string }[] | undefined) ?? []).filter(
+        (x) => x.id.startsWith('local-') && !freshIds.has(x.id)
+      );
+      (next as any)[k] = [...fresh, ...localOnly];
+    });
+    return next;
+  };
+
+  // Sync the active custom event from its connected Notion workspace.
+  const syncCustomEvent = useCallback(async (eventId: string) => {
+    let mapping: { token: string; databases: Record<string, string> } | null = null;
+    try {
+      const raw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      if (raw) mapping = JSON.parse(raw);
+    } catch { /* ignore */ }
+    if (!mapping?.token) return false;
+    const pulled = await fetchCustomWorkspace(mapping.token, mapping.databases ?? {});
+    const total = Object.values(pulled).reduce((n, arr: any) => n + (arr?.length ?? 0), 0);
+    if (total === 0) return false;
+    setCustomData((prev) => {
+      const current = prev[eventId] ?? loadCustomRecords(eventId);
+      const next = mergePulled(current, pulled);
+      saveCustomRecords(eventId, next);
+      return { ...prev, [eventId]: next };
+    });
+    return true;
+  }, []);
+
+  // Unified sync: refreshes whichever event is active. Safe to call in the
+  // background — it never wipes locally created records.
+  const syncingRef = useRef(false);
+  const lastSyncRef = useRef(0);
+  const activeEventIdRef = useRef(activeEventId);
+  activeEventIdRef.current = activeEventId;
+
+  const syncActive = useCallback(async (opts?: { force?: boolean }) => {
+    if (syncingRef.current) return;
+    if (!opts?.force && Date.now() - lastSyncRef.current < 30000) return; // at most every 30s
+    syncingRef.current = true;
+    setSyncing(true);
+    try {
+      const id = activeEventIdRef.current;
+      if (id && isCustomEvent(id)) {
+        const ok = await syncCustomEvent(id);
+        if (ok) {
+          lastSyncRef.current = Date.now();
+          setLastSync(new Date());
+        }
+      } else {
+        const { records, demo } = await fetchAllRecords();
+        setRecords(records);
+        setDemo(demo);
+        lastSyncRef.current = Date.now();
+        setLastSync(new Date());
+      }
+    } catch {
+      // Background sync failures stay silent; manual sync surfaces errors.
+    } finally {
+      setLoading(false);
+      setSyncing(false);
+      syncingRef.current = false;
+    }
+  }, [syncCustomEvent]);
+
   useEffect(() => {
     load();
   }, []);
+
+  // Auto-sync: refresh from Notion when the tab regains focus and every
+  // 60s while visible, so Notion edits appear without a manual pull.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') syncActive();
+    };
+    const onFocus = () => syncActive();
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') syncActive();
+    }, 60000);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [syncActive]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -392,7 +482,7 @@ export default function Dashboard() {
           )}
 
           {view === 'notion' && (
-            <NotionStatus connected={!demo} lastSync={lastSync} syncing={syncing} onSync={load} />
+            <NotionStatus connected={!demo} lastSync={lastSync} syncing={syncing} onSync={() => syncActive({ force: true })} />
           )}
 
           <footer className="mt-10 border-t border-gray-200 pt-4">
