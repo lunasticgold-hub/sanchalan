@@ -43,9 +43,28 @@ export default function Overview({
   const openTasks = records.tasks.filter((t) => t.status !== 'Done').length;
   const draftComms = records.comms.filter((c) => c.status === 'Draft').length;
   const status: 'At risk' | 'On track' = p0.length > 0 || pending.length > 0 ? 'At risk' : 'On track';
+  const isEmptyCustom = activeEvent?.id.startsWith('custom-') &&
+    records.sessions.length === 0 && records.tasks.length === 0 &&
+    records.volunteers.length === 0 && records.attendees.length === 0;
 
   return (
     <div className="space-y-6">
+      {isEmptyCustom && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5">
+          <div className="text-[15px] font-semibold text-gray-900">Set up your event</div>
+          <p className="mt-1 max-w-lg text-[13.5px] leading-relaxed text-gray-600">
+            This is a blank event — add your real data to start running it. Click any card below
+            (Sessions, Volunteers, Tasks…), then hit <strong>+ Add</strong> to create records.
+            Or start with the essentials:
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={() => setView('venues')} className="rounded-lg bg-gray-900 px-3.5 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800">+ Add venue</button>
+            <button onClick={() => setView('sessions')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add session</button>
+            <button onClick={() => setView('volunteers')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add volunteer</button>
+            <button onClick={() => setView('tasks')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add task</button>
+          </div>
+        </div>
+      )}
       {/* Operational status */}
       <section>
         <SectionTitle>Operational status</SectionTitle>
