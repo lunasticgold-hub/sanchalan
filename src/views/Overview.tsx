@@ -148,10 +148,25 @@ export default function Overview({
       <section>
         <SectionTitle>Today's operations</SectionTitle>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="Sessions" value={String(records.sessions.length)} />
-          <Stat label="Volunteers" value={String(records.volunteers.length)} />
-          <Stat label="Open tasks" value={String(openTasks)} />
-          <Stat label="Pending comms" value={String(draftComms)} sub="drafts awaiting review" />
+          {[
+            { view: 'sessions' as View, label: 'Sessions', value: String(records.sessions.length) },
+            { view: 'volunteers' as View, label: 'Volunteers', value: String(records.volunteers.length) },
+            { view: 'tasks' as View, label: 'Open tasks', value: String(openTasks) },
+            { view: 'comms' as View, label: 'Pending comms', value: String(draftComms), sub: 'drafts awaiting review' },
+          ].map((s) => (
+            <button
+              key={s.label}
+              onClick={() => setView(s.view)}
+              className="group rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition-all hover:border-gray-900 hover:shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="text-[20px] font-semibold text-gray-900">{s.value}</div>
+                <span className="text-[14px] text-gray-300 transition-all group-hover:translate-x-0.5 group-hover:text-gray-900">→</span>
+              </div>
+              <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{s.label}</div>
+              {s.sub && <div className="text-[11px] text-gray-400">{s.sub}</div>}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -172,11 +187,14 @@ export default function Overview({
             <button
               key={c.view}
               onClick={() => setView(c.view)}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300 hover:bg-gray-50"
+              className="group rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition-all hover:border-gray-900 hover:shadow-sm"
             >
-              <div className="text-[20px] font-semibold text-gray-900">{c.count}</div>
+              <div className="flex items-start justify-between">
+                <div className="text-[20px] font-semibold text-gray-900">{c.count}</div>
+                <span className="text-[14px] text-gray-300 transition-all group-hover:translate-x-0.5 group-hover:text-gray-900">→</span>
+              </div>
               <div className="text-[12px] font-medium text-gray-700">{c.label}</div>
-              <div className="text-[11px] text-gray-400">{c.sub}</div>
+              <div className="text-[11px] text-gray-400">{c.sub} · <span className="underline underline-offset-2">view list</span></div>
             </button>
           ))}
         </div>
