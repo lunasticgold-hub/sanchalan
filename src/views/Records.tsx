@@ -10,11 +10,27 @@ import {
   Badge, cx, fmtDate, fmtTime, prioTone, QuickAdd, statusTone, td, th, tr,
 } from '../components/ui';
 
+import { useRef, useState } from 'react';
+
 function Drawer({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  // Only close when the press starts AND ends on the backdrop.
+  // This stops accidental closes when double-clicking to select text
+  // (the selection drag can end over the backdrop).
+  const downOn = useRef<EventTarget | null>(null);
   return (
     <div className="fixed inset-0 z-40">
-      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl">
+      <div
+        className="absolute inset-0 bg-black/20"
+        onMouseDown={(e) => { downOn.current = e.target; }}
+        onClick={(e) => {
+          if (downOn.current === e.target) onClose();
+          downOn.current = null;
+        }}
+      />
+      <div
+        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl select-text"
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <div className="text-[15px] font-semibold text-gray-900">{title}</div>
           <button onClick={onClose} className="rounded px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100">✕</button>

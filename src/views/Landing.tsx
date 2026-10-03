@@ -3,6 +3,23 @@
 import { useEffect, useState } from 'react';
 import Logo from '../components/Logo';
 import { NavLink } from '../lib/nav';
+import { supabase, supabaseConfigured } from '../lib/supabase';
+
+/* ---------- Hooks ---------- */
+function useLoggedIn() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!supabaseConfigured || !supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setLoggedIn(Boolean(data.session?.user));
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setLoggedIn(Boolean(session?.user));
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  return loggedIn;
+}
 
 /* ---------- Hooks ---------- */
 function useTypewriter(phrases: string[], speed = 55, pause = 2400) {
@@ -99,6 +116,7 @@ function DashboardMock() {
 }
 
 export default function Landing() {
+  const loggedIn = useLoggedIn();
   return (
     <div className="min-h-screen bg-white text-gray-900 antialiased selection:bg-gray-900 selection:text-white">
       {/* Nav */}
@@ -114,8 +132,14 @@ export default function Landing() {
             ))}
           </div>
           <div className="flex items-center gap-2.5">
-            <NavLink to="/app" className="rounded-lg px-4 py-2 text-[13.5px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">Sign in</NavLink>
-            <NavLink to="/app" className="rounded-lg bg-gray-900 px-4 py-2 text-[13.5px] font-semibold text-white shadow-sm transition-all hover:bg-gray-800">Get started</NavLink>
+            {loggedIn ? (
+              <NavLink to="/app" className="rounded-lg bg-gray-900 px-4 py-2 text-[13.5px] font-semibold text-white shadow-sm transition-all hover:bg-gray-800">Open app →</NavLink>
+            ) : (
+              <>
+                <NavLink to="/app" className="rounded-lg px-4 py-2 text-[13.5px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">Sign in</NavLink>
+                <NavLink to="/app" className="rounded-lg bg-gray-900 px-4 py-2 text-[13.5px] font-semibold text-white shadow-sm transition-all hover:bg-gray-800">Get started</NavLink>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -177,7 +201,7 @@ export default function Landing() {
         <h2 className="mx-auto max-w-xl text-[38px] font-bold leading-[1.08] tracking-tight text-white">Stop running your event on hope and spreadsheets.</h2>
         <p className="mx-auto mt-5 max-w-md text-[16px] text-gray-400">Connect Notion. Describe the change. Approve with confidence.</p>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <NavLink to="/app" className="rounded-xl bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-900 transition-all hover:bg-gray-100">Get started free</NavLink>
+          <NavLink to="/app" className="rounded-xl bg-white px-8 py-3.5 text-[15px] font-semibold text-gray-900 transition-all hover:bg-gray-100">{loggedIn ? 'Open your app →' : 'Get started free'}</NavLink>
           <NavLink to="/pricing" className="rounded-xl border border-gray-800 px-8 py-3.5 text-[15px] font-semibold text-gray-300 transition-all hover:border-gray-700 hover:text-white">View pricing</NavLink>
         </div>
       </section>
