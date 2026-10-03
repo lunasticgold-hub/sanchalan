@@ -125,6 +125,31 @@ export default function Dashboard() {
       return { ...prev, [activeEventId]: next };
     });
   };
+  const deleteEvent = (eventId: string) => {
+    if (!isCustomEvent(eventId)) return;
+    // Remove from list + per-account storage
+    setCustomEvents((cs) => {
+      const next = cs.filter((e) => e.id !== eventId);
+      try { localStorage.setItem(scopedKey('custom_events'), JSON.stringify(next)); } catch {}
+      return next;
+    });
+    // Drop its records, Notion mapping, and in-memory data
+    try {
+      localStorage.removeItem(scopedKey(`event_data_${eventId}`));
+      localStorage.removeItem(scopedKey(`notion_map_${eventId}`));
+    } catch {}
+    setCustomData((prev) => {
+      const next = { ...prev };
+      delete next[eventId];
+      return next;
+    });
+    // Move away if it was active
+    if (activeEventIdRef.current === eventId || activeEventId === eventId) {
+      setActiveEventId('');
+      setView('overview');
+    }
+  };
+
   // Exposed via props to entity views (see AddRecordButton in ui.tsx)
   const isCustomActive = isCustomEvent(activeEventId);
   const makeAdd = (kind: 'sessions' | 'attendees' | 'volunteers' | 'tasks' | 'venues' | 'speakers' | 'sponsors') =>
@@ -441,6 +466,7 @@ export default function Dashboard() {
         activeEventId={activeEventId}
         onSelectEvent={setActiveEventId}
         onAddEvent={() => setShowAddEvent(true)}
+        onDeleteEvent={deleteEvent}
         userEmail={user?.email}
         onSignOut={() => supabase?.auth.signOut()}
         collapsed={sidebarCollapsed}

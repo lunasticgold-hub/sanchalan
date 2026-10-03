@@ -98,6 +98,7 @@ export default function Sidebar({
   activeEventId,
   onSelectEvent,
   onAddEvent,
+  onDeleteEvent,
   userEmail,
   onSignOut,
   collapsed,
@@ -111,12 +112,14 @@ export default function Sidebar({
   activeEventId: string;
   onSelectEvent: (id: string) => void;
   onAddEvent: () => void;
+  onDeleteEvent?: (id: string) => void;
   userEmail?: string | null;
   onSignOut?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -127,12 +130,14 @@ export default function Sidebar({
           <span className="text-[14px] font-semibold tracking-tight text-[#191919]">Sanchalan</span>
         </div>
         {/* Event switcher */}
-        <div className="relative mt-2.5">
+        <div className="mt-2.5 flex items-center gap-1">
+          <div className="relative min-w-0 flex-1">
           <select
             value={activeEventId}
             onChange={(e) => {
               if (e.target.value === '__add__') onAddEvent();
               else onSelectEvent(e.target.value);
+              setConfirmingDelete(false);
               setMobileOpen(false);
             }}
             aria-label="Switch event"
@@ -144,6 +149,38 @@ export default function Sidebar({
             <option value="__add__">+ New event…</option>
           </select>
           <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[#9B9B9B]" aria-hidden>▾</span>
+          </div>
+          {onDeleteEvent && activeEventId.startsWith('custom-') && (
+            confirmingDelete ? (
+              <span className="flex shrink-0 items-center gap-1">
+                <button
+                  onClick={() => { onDeleteEvent(activeEventId); setConfirmingDelete(false); setMobileOpen(false); }}
+                  title="Confirm delete"
+                  className="rounded-[6px] bg-red-700 px-2 py-1.5 text-[11px] font-semibold text-white transition-quiet hover:bg-red-800"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  title="Cancel"
+                  className="rounded-[6px] px-2 py-1.5 text-[11px] font-medium text-[#6B6B6B] ring-1 ring-inset ring-[#E8E8E6] hover:bg-[#F5F5F3]"
+                >
+                  Keep
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                title="Delete this event"
+                aria-label="Delete this event"
+                className="shrink-0 rounded-[6px] p-1.5 text-[#9B9B9B] transition-quiet hover:bg-red-50 hover:text-red-700"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M2.5 4h11M6.5 2.5h3M4 4l.7 9.2a1 1 0 0 0 1 .8h4.6a1 1 0 0 0 1-.8L12 4M6.5 7v4M9.5 7v4" />
+                </svg>
+              </button>
+            )
+          )}
         </div>
       </div>
 
