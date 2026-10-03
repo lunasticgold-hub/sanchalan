@@ -26,9 +26,10 @@ interface Props {
   refreshRecords: () => Promise<void>;
   onViewImpact: (id: string) => void;
   initialActiveId?: string | null;
+  operatorName?: string;
 }
 
-const OPERATOR = 'Abhigyan Rai';
+const FALLBACK_OPERATOR = 'Abhigyan Rai';
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 // ---------- helpers ----------
@@ -194,7 +195,8 @@ function scrollTo(id: string) {
 
 // ---------- main view ----------
 
-export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId }: Props) {
+export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId, operatorName }: Props) {
+  const OPERATOR = operatorName ?? FALLBACK_OPERATOR;
   const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null);
   const [showNew, setShowNew] = useState(false);
   const [input, setInput] = useState('');

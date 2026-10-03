@@ -53,6 +53,8 @@ export default function Sidebar({
   activeEventId,
   onSelectEvent,
   onAddEvent,
+  userEmail,
+  onSignOut,
 }: {
   view: View;
   setView: (v: View) => void;
@@ -62,6 +64,8 @@ export default function Sidebar({
   activeEventId: string;
   onSelectEvent: (id: string) => void;
   onAddEvent: () => void;
+  userEmail?: string | null;
+  onSignOut?: () => void;
 }) {
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-gray-200 bg-white">
@@ -129,10 +133,15 @@ export default function Sidebar({
       <div className="border-t border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2 px-1">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[11px] font-bold text-gray-600">
-            AR
+            {(userEmail ?? 'AR').slice(0, 2).toUpperCase()}
           </span>
-          <span className="truncate text-[12px] text-gray-600">Abhigyan Rai</span>
+          <span className="truncate text-[12px] text-gray-600">{userEmail ?? 'Abhigyan Rai'}</span>
         </div>
+        {onSignOut && userEmail && (
+          <button onClick={onSignOut} className="mt-1 px-1 text-[12px] font-medium text-gray-400 hover:text-gray-700">
+            Sign out
+          </button>
+        )}
       </div>
     </aside>
   );

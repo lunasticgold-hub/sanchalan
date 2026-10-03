@@ -17,6 +17,8 @@ import NotionStatus from './views/NotionStatus';
 import { fetchAllRecords } from './lib/api';
 import type { ChangeRequest, Records } from './lib/types';
 import { cx } from './components/ui';
+import Auth from './components/Auth';
+import { supabase, supabaseConfigured } from './lib/supabase';
 
 const VIEW_TITLES: Record<View, string> = {
   overview: 'Overview',
@@ -117,6 +119,20 @@ export default function App() {
   const [activeEventId, setActiveEventId] = useState<string>('');
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [customEvents, setCustomEvents] = useState<{ id: string; name: string }[]>([]);
+  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(!supabaseConfigured);
+
+  useEffect(() => {
+    if (!supabaseConfigured || !supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user?.email ? { email: data.session.user.email } : null);
+      setAuthChecked(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user?.email ? { email: session.user.email } : null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   const events = useMemo(() => {
     const fromRecords = (records?.events ?? []).map((e) => ({ id: e.id, name: e.name }));
@@ -163,6 +179,18 @@ export default function App() {
       vol: new Map(records.volunteers.map((v) => [v.id, v.name])),
     };
   }, [records]);
+
+  if (!authChecked) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#fafafa] text-[13px] text-gray-500">
+        Loading…
+      </div>
+    );
+  }
+
+  if (supabaseConfigured && !user) {
+    return <Auth onDone={() => {}} />;
+  }
 
   if (loading || !records || !maps) {
     return (
@@ -215,6 +243,8 @@ export default function App() {
         activeEventId={activeEventId}
         onSelectEvent={setActiveEventId}
         onAddEvent={() => setShowAddEvent(true)}
+        userEmail={user?.email}
+        onSignOut={() => supabase?.auth.signOut()}
       />
 
       <main className="flex-1 overflow-y-auto">
@@ -257,6 +287,7 @@ export default function App() {
               setChanges={setChanges}
               refreshRecords={load}
               onViewImpact={gotoImpact}
+              operatorName={user?.email ?? undefined}
             />
           )}
           {view === 'simulate' && <Simulate records={records} onConvert={convertScenario} />}
