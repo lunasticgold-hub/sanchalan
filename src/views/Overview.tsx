@@ -52,7 +52,7 @@ export default function Overview({
 
   return (
     <div className="space-y-6">
-      {isEmptyCustom && (
+      {isEmptyCustom && activeEvent && (
         <PullFromNotionBanner
           eventId={activeEvent.id}
           setView={setView}
