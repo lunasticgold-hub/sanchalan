@@ -7,6 +7,7 @@ import type {
 } from '../lib/types';
 import { applyGeneralChange, applyTimeShift, applyVenueChange } from '../lib/engine';
 import { applyPlan, parseUpdate } from '../lib/api';
+import { isCustomEvent } from '../lib/eventData';
 import ProvenanceBadge from '../components/ProvenanceBadge';
 import {
   Badge, Btn, EmptyState, SectionTitle, cx, fmtDateTime, fmtTime, prioTone,
@@ -27,8 +28,8 @@ interface Props {
   onViewImpact: (id: string) => void;
   initialActiveId?: string | null;
   operatorName?: string;
-  notionToken?: string;
-  notionDatabases?: Record<string, string>;
+  eventId?: string;
+  resolveNotionCreds?: (eventId: string) => { token?: string; databases?: Record<string, string> };
 }
 
 const FALLBACK_OPERATOR = 'Abhigyan Rai';
@@ -197,7 +198,7 @@ function scrollTo(id: string) {
 
 // ---------- main view ----------
 
-export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId, operatorName, notionToken, notionDatabases }: Props) {
+export default function Changes({ records, maps, changes, setChanges, refreshRecords, onViewImpact, initialActiveId, operatorName, eventId, resolveNotionCreds }: Props) {
   const OPERATOR = operatorName ?? FALLBACK_OPERATOR;
   const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null);
   const [showNew, setShowNew] = useState(false);
@@ -240,6 +241,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             : applyGeneralChange(records, parsed.params);
       const cr: ChangeRequest = {
         id: uid(),
+        eventId,
         input: text,
         parsed,
         plan,
@@ -279,8 +281,16 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
     });
     setApplyError('');
     setExecLog(['Validating change plan…']);
+    const changeEventId = active.eventId ?? eventId ?? '';
+    const creds = resolveNotionCreds?.(changeEventId) ?? {};
+    if (changeEventId && isCustomEvent(changeEventId) && !creds.token) {
+      const msg = 'This event is not connected to Notion — connect it first, then retry. (Your analysis is saved.)';
+      setApplyError(msg);
+      patchChange(id, { status: 'analyzed', applyError: msg });
+      return;
+    }
     try {
-      const res = await applyPlan(active.plan, undefined, { token: notionToken, databases: notionDatabases });
+      const res = await applyPlan(active.plan, undefined, { token: creds.token, databases: creds.databases });
       const plan = active.plan;
       const log = [
         `Updated ${plan.updates.filter((u) => u.db === 'sessions').length} session(s)`,
@@ -334,7 +344,8 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
       }));
       // 2. Archive created pages
       const archive = active.rollback.createdIds.map((c) => ({ pageId: c.pageId }));
-      await applyPlan({ updates: reverseUpdates, newTasks: [], newComms: [], newImpactReports: [], risks: [], summary: '' } as any, archive, { token: notionToken, databases: notionDatabases });
+      const creds = resolveNotionCreds?.(active.eventId ?? eventId ?? '') ?? {};
+      await applyPlan({ updates: reverseUpdates, newTasks: [], newComms: [], newImpactReports: [], risks: [], summary: '' } as any, archive, { token: creds.token, databases: creds.databases });
       setExecLog(['Reverted updated records', `Archived ${archive.length} created record(s)`, 'Notion synced']);
       patchChange(id, { status: 'undone', undoneAt: new Date().toISOString() });
       await refreshRecords();

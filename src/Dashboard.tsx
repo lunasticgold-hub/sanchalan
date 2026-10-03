@@ -198,20 +198,20 @@ export default function Dashboard() {
     }
   };
 
-  // The active custom event's Notion credentials (token + database mapping),
-  // read from per-account storage. Undefined for the demo event (server fallback).
-  const activeNotionCreds = (() => {
-    if (!activeEventId || !isCustomEvent(activeEventId)) return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+  // Resolve a custom event's Notion credentials (token + database mapping)
+  // from per-account storage. Undefined for the demo event (server fallback).
+  const resolveNotionCreds = (eventId: string): { token?: string; databases?: Record<string, string> } => {
+    if (!eventId || !isCustomEvent(eventId)) return {};
     try {
-      migrateLegacyKey(`notion_map_${activeEventId}`);
-      const raw = localStorage.getItem(scopedKey(`notion_map_${activeEventId}`));
-      if (!raw) return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+      migrateLegacyKey(`notion_map_${eventId}`);
+      const raw = localStorage.getItem(scopedKey(`notion_map_${eventId}`));
+      if (!raw) return {};
       const parsed = JSON.parse(raw);
       return { token: parsed.token as string | undefined, databases: parsed.databases as Record<string, string> | undefined };
     } catch {
-      return { token: undefined as string | undefined, databases: undefined as Record<string, string> | undefined };
+      return {};
     }
-  })();
+  };
 
   // Merge freshly pulled Notion records over existing ones, preserving
   // records created locally in Sanchalan (id starts with 'local-').
@@ -492,8 +492,8 @@ export default function Dashboard() {
               refreshRecords={load}
               onViewImpact={gotoImpact}
               operatorName={user?.name || user?.email || undefined}
-              notionToken={activeNotionCreds.token}
-              notionDatabases={activeNotionCreds.databases}
+              eventId={activeEventId}
+              resolveNotionCreds={resolveNotionCreds}
             />
           )}
           {view === 'simulate' && <Simulate records={activeRecords} onConvert={convertScenario} />}

@@ -125,6 +125,7 @@ export interface ChangeRequest {
   status: ChangeStatus;
   createdAt: string; // ISO
   requestedBy: string;
+  eventId?: string; // event the change was analyzed against (for correct Notion creds at apply)
   approvedBy?: string;
   appliedAt?: string;
   applyResult?: { updated: number; created: { db: string; url: string }[] };
