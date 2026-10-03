@@ -10,6 +10,16 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
+
+  const friendlyError = (msg: string) => {
+    if (/rate limit|security purposes|after \d+ seconds/i.test(msg)) {
+      const s = msg.match(/after (\d+) seconds/i);
+      return `Too many attempts — please wait ${s ? s[1] : 'a few'} seconds and try again.`;
+    }
+    if (/already registered|already exists/i.test(msg)) return 'This email is already registered. Try signing in instead.';
+    return msg;
+  };
 
   const submit = async () => {
     if (!supabase) return;
@@ -19,17 +29,45 @@ export default function Auth({ onDone }: { onDone: () => void }) {
       if (mode === 'in') {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
+        onDone();
       } else {
-        const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
         if (error) throw error;
+        // If email confirmation is on, there'll be no session yet
+        if (!data.session) {
+          setCheckEmail(true);
+        } else {
+          onDone();
+        }
       }
-      onDone();
     } catch (e: any) {
-      setErr(e?.message ?? 'Something went wrong');
+      setErr(friendlyError(e?.message ?? 'Something went wrong'));
     } finally {
       setBusy(false);
     }
   };
+
+  if (checkEmail) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
+        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
+          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+          <div className="mt-0.5 text-[13px] text-gray-500">Event Command Center</div>
+          <div className="mx-auto mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
+          <h2 className="mt-3 text-[15px] font-semibold text-gray-900">Check your email</h2>
+          <p className="mt-1 text-[13px] text-gray-600">
+            We sent a confirmation link to <span className="font-medium text-gray-900">{email.trim()}</span>. Click it to finish signing up, then come back here to sign in.
+          </p>
+          <button
+            onClick={() => { setCheckEmail(false); setMode('in'); setErr(''); }}
+            className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
