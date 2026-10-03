@@ -1,6 +1,7 @@
 // Left application sidebar: logo, workspace, nav, connection status.
 
 import { cx } from './ui';
+import Logo from './Logo';
 
 export type View =
   | 'overview'
@@ -70,8 +71,11 @@ export default function Sidebar({
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-gray-200 bg-white">
       <div className="px-4 pb-3 pt-4">
-        <div className="text-[15px] font-bold tracking-tight text-gray-900">Sanchalan</div>
-        <div className="relative mt-1">
+        <div className="flex items-center gap-2">
+          <Logo size={26} />
+          <div className="text-[15px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+        </div>
+        <div className="relative mt-2">
           <select
             value={activeEventId}
             onChange={(e) => {

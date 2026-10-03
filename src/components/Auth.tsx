@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import Logo from './Logo';
 
 export default function Auth({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<'in' | 'up'>('in');
@@ -96,8 +97,11 @@ export default function Auth({ onDone }: { onDone: () => void }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
         <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
-          <div className="mt-0.5 text-[13px] text-gray-500">Set a new password</div>
+          <div className="flex items-center gap-2">
+            <Logo size={24} />
+            <div className="text-[16px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+          </div>
+          <div className="mt-1 text-[13px] text-gray-500">Set a new password</div>
           <input
             type={showPw ? 'text' : 'password'}
             value={password}
@@ -124,8 +128,11 @@ export default function Auth({ onDone }: { onDone: () => void }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
         <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
-          <div className="mt-0.5 text-[13px] text-gray-500">Reset your password</div>
+          <div className="flex items-center gap-2">
+            <Logo size={24} />
+            <div className="text-[16px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+          </div>
+          <div className="mt-1 text-[13px] text-gray-500">Reset your password</div>
           {resetSent ? (
             <div className="mt-4 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
@@ -172,8 +179,13 @@ export default function Auth({ onDone }: { onDone: () => void }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
         <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
-          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
-          <div className="mt-0.5 text-[13px] text-gray-500">Event Command Center</div>
+          <div className="flex items-center gap-2">
+            <Logo size={24} />
+            <div>
+              <div className="text-[16px] font-bold tracking-tight text-gray-900 leading-none">Sanchalan</div>
+              <div className="mt-0.5 text-[11px] text-gray-500">Event Command Center</div>
+            </div>
+          </div>
           <div className="mx-auto mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
           <h2 className="mt-3 text-[15px] font-semibold text-gray-900">Check your email</h2>
           <p className="mt-1 text-[13px] text-gray-600">

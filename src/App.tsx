@@ -19,6 +19,7 @@ import type { ChangeRequest, Records } from './lib/types';
 import { cx } from './components/ui';
 import { Linkify } from './components/ui';
 import Auth from './components/Auth';
+import Logo from './components/Logo';
 import { supabase, supabaseConfigured } from './lib/supabase';
 import { emptyRecords, isCustomEvent, loadCustomRecords, saveCustomRecords } from './lib/eventData';
 
@@ -358,9 +359,14 @@ export default function App() {
             <NotionStatus connected={!demo} lastSync={lastSync} syncing={syncing} onSync={load} />
           )}
 
-          <footer className="mt-10 border-t border-gray-200 pt-4 text-[11px] text-gray-400">
-            Sanchalan · Kaun Banega Codepati 2026 (KBC-NOTION-03) · {VIEW_TITLES[view]} · Notion is
-            the system of record
+          <footer className="mt-10 border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Logo size={18} />
+                <span className="text-[11px] font-medium text-gray-500">Sanchalan · Kaun Banega Codepati 2026 (KBC-NOTION-03)</span>
+              </div>
+              <span className="text-[11px] text-gray-400">Notion is the system of record</span>
+            </div>
           </footer>
         </div>
       </main>
