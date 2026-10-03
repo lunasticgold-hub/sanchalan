@@ -52,14 +52,14 @@ export default function PullFromNotionBanner({
 
   return (
     <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5">
-      <div className="text-[15px] font-semibold text-gray-900">Set up your event</div>
+      <div className="text-[15px] font-semibold text-[#191919]">Set up your event</div>
       {pulledCount !== null ? (
         <p className="mt-1 text-[13.5px] text-green-700">
           ✓ Pulled {pulledCount} records from your Notion workspace.
         </p>
       ) : (
         <>
-          <p className="mt-1 max-w-lg text-[13.5px] leading-relaxed text-gray-600">
+          <p className="mt-1 max-w-lg text-[13.5px] leading-relaxed text-[#6B6B6B]">
             Pull your real data from Notion, or add records manually below.
           </p>
           {err && <p className="mt-2 text-[13px] text-red-600">{err}</p>}
@@ -68,25 +68,25 @@ export default function PullFromNotionBanner({
               <button
                 onClick={pull}
                 disabled={pulling}
-                className="rounded-lg bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="rounded-lg bg-[#191919] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#2e2e2e] disabled:opacity-50"
               >
                 {pulling ? 'Pulling from Notion…' : '↓ Pull from Notion'}
               </button>
             ) : (
               <button
                 onClick={() => setShowConnect(true)}
-                className="rounded-lg bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800"
+                className="rounded-lg bg-[#191919] px-4 py-1.5 text-[13px] font-medium text-white hover:bg-[#2e2e2e]"
               >
                 ⇄ Connect Notion & Sync
               </button>
             )}
-            <button onClick={() => setView('venues')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add venue</button>
-            <button onClick={() => setView('sessions')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add session</button>
-            <button onClick={() => setView('volunteers')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add volunteer</button>
-            <button onClick={() => setView('tasks')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add task</button>
+            <button onClick={() => setView('venues')} className="rounded-lg border border-[#D9D9D6] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]">+ Add venue</button>
+            <button onClick={() => setView('sessions')} className="rounded-lg border border-[#D9D9D6] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]">+ Add session</button>
+            <button onClick={() => setView('volunteers')} className="rounded-lg border border-[#D9D9D6] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]">+ Add volunteer</button>
+            <button onClick={() => setView('tasks')} className="rounded-lg border border-[#D9D9D6] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]">+ Add task</button>
           </div>
           {!hasMapping && (
-            <p className="mt-2 text-[12px] text-gray-500">
+            <p className="mt-2 text-[12px] text-[#6B6B6B]">
               Connect your Notion workspace to pull your real event data.
             </p>
           )}

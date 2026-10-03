@@ -96,12 +96,12 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   if (newPw) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
-        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="w-full max-w-sm rounded-lg border border-[#E8E8E6] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2">
             <Logo size={24} />
-            <div className="text-[16px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+            <div className="text-[16px] font-bold tracking-tight text-[#191919]">Sanchalan</div>
           </div>
-          <div className="mt-1 text-[13px] text-gray-500">Set a new password</div>
+          <div className="mt-1 text-[13px] text-[#6B6B6B]">Set a new password</div>
           <input
             type={showPw ? 'text' : 'password'}
             value={password}
@@ -109,13 +109,13 @@ export default function Auth({ onDone }: { onDone: () => void }) {
             placeholder="New password"
             autoComplete="new-password"
             onKeyDown={(e) => e.key === 'Enter' && updatePassword()}
-            className="mt-4 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+            className="mt-4 w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
           />
           {err && <p className="mt-3 text-[13px] font-medium text-red-700">{err}</p>}
           <button
             onClick={updatePassword}
             disabled={busy || !password}
-            className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
+            className="mt-4 w-full rounded-md bg-[#191919] px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
           >
             {busy ? 'Saving…' : 'Save new password'}
           </button>
@@ -127,22 +127,22 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   if (resetMode) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
-        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="w-full max-w-sm rounded-lg border border-[#E8E8E6] bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2">
             <Logo size={24} />
-            <div className="text-[16px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+            <div className="text-[16px] font-bold tracking-tight text-[#191919]">Sanchalan</div>
           </div>
-          <div className="mt-1 text-[13px] text-gray-500">Reset your password</div>
+          <div className="mt-1 text-[13px] text-[#6B6B6B]">Reset your password</div>
           {resetSent ? (
             <div className="mt-4 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
-              <p className="mt-3 text-[13px] text-gray-600">
-                If an account exists for <span className="font-medium text-gray-900">{email.trim()}</span>, you'll get a reset link shortly.
+              <p className="mt-3 text-[13px] text-[#6B6B6B]">
+                If an account exists for <span className="font-medium text-[#191919]">{email.trim()}</span>, you'll get a reset link shortly.
               </p>
             </div>
           ) : (
             <>
-              <p className="mt-3 text-[13px] text-gray-600">Enter your email and we'll send you a reset link.</p>
+              <p className="mt-3 text-[13px] text-[#6B6B6B]">Enter your email and we'll send you a reset link.</p>
               <input
                 type="email"
                 value={email}
@@ -150,7 +150,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
                 placeholder="Email"
                 autoComplete="email"
                 onKeyDown={(e) => e.key === 'Enter' && sendReset()}
-                className="mt-3 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+                className="mt-3 w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
               />
             </>
           )}
@@ -159,14 +159,14 @@ export default function Auth({ onDone }: { onDone: () => void }) {
             <button
               onClick={sendReset}
               disabled={busy || !email.trim()}
-              className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
+              className="mt-4 w-full rounded-md bg-[#191919] px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
             >
               {busy ? 'Sending…' : 'Send reset link'}
             </button>
           )}
           <button
             onClick={() => { setResetMode(false); setResetSent(false); setErr(''); }}
-            className="mt-2 w-full rounded-md px-4 py-2 text-[13px] font-medium text-gray-500 hover:bg-gray-100"
+            className="mt-2 w-full rounded-md px-4 py-2 text-[13px] font-medium text-[#6B6B6B] hover:bg-[#EFEFEA]"
           >
             Back to sign in
           </button>
@@ -178,22 +178,22 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   if (checkEmail) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
-        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
+        <div className="w-full max-w-sm rounded-lg border border-[#E8E8E6] bg-white p-6 text-center shadow-sm">
           <div className="flex items-center gap-2">
             <Logo size={24} />
             <div>
-              <div className="text-[16px] font-bold tracking-tight text-gray-900 leading-none">Sanchalan</div>
-              <div className="mt-0.5 text-[11px] text-gray-500">Event Command Center</div>
+              <div className="text-[16px] font-bold tracking-tight text-[#191919] leading-none">Sanchalan</div>
+              <div className="mt-0.5 text-[11px] text-[#6B6B6B]">Event Command Center</div>
             </div>
           </div>
           <div className="mx-auto mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
-          <h2 className="mt-3 text-[15px] font-semibold text-gray-900">Check your email</h2>
-          <p className="mt-1 text-[13px] text-gray-600">
-            We sent a confirmation link to <span className="font-medium text-gray-900">{email.trim()}</span>. Click it to finish signing up, then come back here to sign in.
+          <h2 className="mt-3 text-[15px] font-semibold text-[#191919]">Check your email</h2>
+          <p className="mt-1 text-[13px] text-[#6B6B6B]">
+            We sent a confirmation link to <span className="font-medium text-[#191919]">{email.trim()}</span>. Click it to finish signing up, then come back here to sign in.
           </p>
           <button
             onClick={() => { setCheckEmail(false); setMode('in'); setErr(''); }}
-            className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white"
+            className="mt-4 w-full rounded-md bg-[#191919] px-4 py-2 text-[14px] font-medium text-white"
           >
             Back to sign in
           </button>
@@ -204,21 +204,21 @@ export default function Auth({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
-      <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="w-full max-w-sm rounded-lg border border-[#E8E8E6] bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
           <Logo size={24} />
           <div>
-            <div className="text-[16px] font-bold tracking-tight text-gray-900 leading-none">Sanchalan</div>
-            <div className="mt-0.5 text-[11px] text-gray-500">Event Command Center</div>
+            <div className="text-[16px] font-bold tracking-tight text-[#191919] leading-none">Sanchalan</div>
+            <div className="mt-0.5 text-[11px] text-[#6B6B6B]">Event Command Center</div>
           </div>
         </div>
 
-        <div className="mt-5 flex rounded-md bg-gray-100 p-0.5">
+        <div className="mt-5 flex rounded-md bg-[#EFEFEA] p-0.5">
           {(['in', 'up'] as const).map((m) => (
             <button
               key={m}
               onClick={() => { setMode(m); setErr(''); }}
-              className={`flex-1 rounded px-3 py-1.5 text-[13px] font-medium ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+              className={`flex-1 rounded px-3 py-1.5 text-[13px] font-medium ${mode === m ? 'bg-white text-[#191919] shadow-sm' : 'text-[#6B6B6B]'}`}
             >
               {m === 'in' ? 'Sign in' : 'Sign up'}
             </button>
@@ -232,7 +232,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             autoComplete="email"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+            className="w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
           />
           <div className="relative">
             <input
@@ -242,12 +242,12 @@ export default function Auth({ onDone }: { onDone: () => void }) {
               placeholder="Password"
               autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
               onKeyDown={(e) => e.key === 'Enter' && submit()}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-[14px] focus:border-gray-900 focus:outline-none"
+              className="w-full rounded-md border border-[#D9D9D6] px-3 py-2 pr-10 text-[14px] focus:border-gray-900 focus:outline-none"
             />
             <button
               type="button"
               onClick={() => setShowPw((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[12px] font-medium text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[12px] font-medium text-[#9B9B9B] hover:bg-[#EFEFEA] hover:text-[#3d3d3d]"
               title={showPw ? 'Hide password' : 'Show password'}
             >
               {showPw ? 'Hide' : 'Show'}
@@ -260,7 +260,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         <button
           onClick={submit}
           disabled={busy || !email.trim() || !password}
-          className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
+          className="mt-4 w-full rounded-md bg-[#191919] px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
         >
           {busy ? 'Please wait…' : mode === 'in' ? 'Sign in' : 'Create account'}
         </button>
@@ -268,13 +268,13 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         {mode === 'in' && (
           <button
             onClick={() => { setResetMode(true); setErr(''); setResetSent(false); }}
-            className="mt-2 w-full text-center text-[13px] font-medium text-gray-500 hover:text-gray-800"
+            className="mt-2 w-full text-center text-[13px] font-medium text-[#6B6B6B] hover:text-[#2b2b2b]"
           >
             Forgot password?
           </button>
         )}
 
-        <p className="mt-4 text-center text-[12px] text-gray-500">
+        <p className="mt-4 text-center text-[12px] text-[#6B6B6B]">
           Your event data stays in Notion. Sanchalan only uses your login to know who approved what.
         </p>
       </div>

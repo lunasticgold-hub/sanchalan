@@ -35,9 +35,9 @@ export default function Live({ records, changes }: { records: Records; changes: 
       <section>
         <SectionTitle>Currently happening</SectionTitle>
         {current ? (
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="text-[16px] font-semibold text-gray-900">{current.name}</div>
-            <div className="mt-1 text-[13px] text-gray-600">
+          <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+            <div className="text-[16px] font-semibold text-[#191919]">{current.name}</div>
+            <div className="mt-1 text-[13px] text-[#6B6B6B]">
               {venueName(current.venueId)} · {fmtTime(current.starts)}–{fmtTime(current.ends)} · Speaker: {current.speaker}
             </div>
             <div className="mt-2 flex gap-2">
@@ -47,7 +47,7 @@ export default function Live({ records, changes }: { records: Records; changes: 
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-[13px] text-gray-500">
+          <div className="rounded-lg border border-dashed border-[#D9D9D6] bg-white px-4 py-6 text-center text-[13px] text-[#6B6B6B]">
             No session in progress right now. {upcoming.length > 0 ? `Next: ${upcoming[0].name} at ${fmtTime(upcoming[0].starts)}.` : 'All sessions concluded.'}
           </div>
         )}
@@ -57,14 +57,14 @@ export default function Live({ records, changes }: { records: Records; changes: 
       <section>
         <SectionTitle>Next 60 minutes</SectionTitle>
         {upcoming.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-[13px] text-gray-500">Nothing scheduled in the next hour.</div>
+          <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3 text-[13px] text-[#6B6B6B]">Nothing scheduled in the next hour.</div>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[#E8E8E6] bg-white">
             {upcoming.map((s) => (
-              <div key={s.id} className="flex items-center gap-3 border-b border-gray-100 px-4 py-2.5 last:border-0">
-                <span className="w-14 shrink-0 font-mono text-[13px] text-gray-700">{fmtTime(s.starts)}</span>
-                <span className="flex-1 text-[13px] font-medium text-gray-900">{s.name}</span>
-                <span className="text-[12px] text-gray-500">{venueName(s.venueId)}</span>
+              <div key={s.id} className="flex items-center gap-3 border-b border-[#F0EFEC] px-4 py-2.5 last:border-0">
+                <span className="w-14 shrink-0 font-mono text-[13px] text-[#3d3d3d]">{fmtTime(s.starts)}</span>
+                <span className="flex-1 text-[13px] font-medium text-[#191919]">{s.name}</span>
+                <span className="text-[12px] text-[#6B6B6B]">{venueName(s.venueId)}</span>
                 <Badge tone={statusTone(s.status)}>{s.status}</Badge>
               </div>
             ))}
@@ -76,10 +76,10 @@ export default function Live({ records, changes }: { records: Records; changes: 
         {/* Check-in */}
         <section>
           <SectionTitle>Attendee check-in</SectionTitle>
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="text-[22px] font-semibold text-gray-900">{total ? Math.round((checked / total) * 100) : 0}%</div>
-            <div className="text-[12px] text-gray-500">{checked} of {total} checked in</div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+          <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+            <div className="text-[22px] font-semibold text-[#191919]">{total ? Math.round((checked / total) * 100) : 0}%</div>
+            <div className="text-[12px] text-[#6B6B6B]">{checked} of {total} checked in</div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#EFEFEA]">
               <div className="h-full rounded-full bg-green-500" style={{ width: `${total ? (checked / total) * 100 : 0}%` }} />
             </div>
           </div>
@@ -87,10 +87,10 @@ export default function Live({ records, changes }: { records: Records; changes: 
         {/* Volunteer coverage */}
         <section>
           <SectionTitle>Volunteer coverage</SectionTitle>
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="text-[22px] font-semibold text-gray-900">{records.volunteers.length}</div>
-            <div className="text-[12px] text-gray-500">volunteers on shift</div>
-            <div className="mt-1 text-[12px] text-gray-500">
+          <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+            <div className="text-[22px] font-semibold text-[#191919]">{records.volunteers.length}</div>
+            <div className="text-[12px] text-[#6B6B6B]">volunteers on shift</div>
+            <div className="mt-1 text-[12px] text-[#6B6B6B]">
               {['Morning', 'Afternoon', 'Full-day'].map((sh) => `${sh}: ${records.volunteers.filter((v) => v.shift === sh).length}`).join(' · ')}
             </div>
           </div>
@@ -98,10 +98,10 @@ export default function Live({ records, changes }: { records: Records; changes: 
         {/* Tasks */}
         <section>
           <SectionTitle>Outstanding tasks</SectionTitle>
-          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="text-[22px] font-semibold text-gray-900">{openTasks.length}</div>
-            <div className="text-[12px] text-gray-500">open tasks</div>
-            <div className="mt-1 text-[12px] text-gray-500">
+          <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+            <div className="text-[22px] font-semibold text-[#191919]">{openTasks.length}</div>
+            <div className="text-[12px] text-[#6B6B6B]">open tasks</div>
+            <div className="mt-1 text-[12px] text-[#6B6B6B]">
               {openTasks.filter((t) => t.priority === 'P0').length} P0 · {openTasks.filter((t) => t.status === 'Blocked').length} blocked
             </div>
           </div>
@@ -117,9 +117,9 @@ export default function Live({ records, changes }: { records: Records; changes: 
               <div key={r.id} className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Badge tone="red">P0</Badge>
-                  <span className="text-[14px] font-semibold text-gray-900">{r.name}</span>
+                  <span className="text-[14px] font-semibold text-[#191919]">{r.name}</span>
                 </div>
-                <div className="mt-1 text-[13px] text-gray-600">{r.description}</div>
+                <div className="mt-1 text-[13px] text-[#6B6B6B]">{r.description}</div>
               </div>
             ))}
           </div>

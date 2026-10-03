@@ -164,22 +164,22 @@ function Tree({ nodes }: { nodes: TNode[] }) {
     <ul className="space-y-1">
       {nodes.map((n, i) => (
         <li key={i}>
-          <div className="flex items-baseline gap-2 rounded px-2 py-1 hover:bg-gray-50">
+          <div className="flex items-baseline gap-2 rounded px-2 py-1 hover:bg-[#F5F5F3]">
             <span
               className={cx(
                 'h-1.5 w-1.5 shrink-0 translate-y-[-1px] rounded-full',
-                n.tone === 'venue' && 'bg-gray-900',
+                n.tone === 'venue' && 'bg-[#191919]',
                 n.tone === 'session' && 'bg-blue-600',
                 n.tone === 'task' && 'bg-amber-500',
                 n.tone === 'vol' && 'bg-green-600',
                 n.tone === 'comms' && 'bg-gray-400',
               )}
             />
-            <span className="text-[13px] font-medium text-gray-900">{n.label}</span>
-            {n.detail && <span className="text-[12px] text-gray-500">{n.detail}</span>}
+            <span className="text-[13px] font-medium text-[#191919]">{n.label}</span>
+            {n.detail && <span className="text-[12px] text-[#6B6B6B]">{n.detail}</span>}
           </div>
           {n.children.length > 0 && (
-            <div className="ml-[13px] border-l border-gray-200 pl-3">
+            <div className="ml-[13px] border-l border-[#E8E8E6] pl-3">
               <Tree nodes={n.children} />
             </div>
           )}
@@ -397,25 +397,25 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
     return (
       <div className="space-y-5">
         {/* Change request */}
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
           <SectionTitle>Change request</SectionTitle>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {parsed.type === 'venue_change' && (
               <>
                 <div>
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Move sessions from</div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Move sessions from</div>
                   <div className="text-[15px] font-semibold">{parsed.params.fromVenueName}</div>
                 </div>
-                <div className="text-gray-400">→</div>
+                <div className="text-[#9B9B9B]">→</div>
                 <div>
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">To</div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">To</div>
                   <div className="text-[15px] font-semibold">{parsed.params.toVenueName}</div>
                 </div>
               </>
             )}
             {parsed.type === 'time_shift' && (
               <div>
-                <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Shift</div>
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Shift</div>
                 <div className="text-[15px] font-semibold">
                   All sessions {parsed.params.minutes > 0 ? 'delayed' : 'preponed'} by {Math.abs(parsed.params.minutes)} min
                 </div>
@@ -423,7 +423,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             )}
             {parsed.type === 'general' && (
               <div>
-                <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Change · {parsed.params.action}</div>
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Change · {parsed.params.action}</div>
                 <div className="text-[15px] font-semibold">{parsed.params.summary}</div>
               </div>
             )}
@@ -431,40 +431,40 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
               <Badge tone="blue">Analysis complete</Badge>
             </div>
           </div>
-          <div className="mt-2 text-[12px] text-gray-500">
+          <div className="mt-2 text-[12px] text-[#6B6B6B]">
             Requested by {c.requestedBy} · {fmtDateTime(c.createdAt)}
             {parsed.via && <span className="ml-2">· parsed via {parsed.via}</span>}
           </div>
         </section>
 
         {/* Impact summary */}
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
           <SectionTitle>Impact summary</SectionTitle>
           <div className="flex flex-wrap gap-2">
             {counts.map((k) => (
               <button
                 key={k.label}
                 onClick={() => scrollTo(k.target)}
-                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-semibold text-gray-800 hover:border-gray-500"
+                className="rounded-md border border-[#D9D9D6] bg-white px-3 py-1.5 text-[13px] font-semibold text-[#2b2b2b] hover:border-gray-500"
               >
                 {k.n} {k.label}
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[13px] text-gray-600">{plan.summary}</p>
+          <p className="mt-2 text-[13px] text-[#6B6B6B]">{plan.summary}</p>
         </section>
 
         {/* Dependency view */}
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
           <SectionTitle>Dependency view</SectionTitle>
           <Tree nodes={tree} />
         </section>
 
         {/* Risk check */}
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
           <SectionTitle>Risk check</SectionTitle>
           {plan.risks.length === 0 && (
-            <p className="text-[13px] text-gray-600">No risks detected for this change.</p>
+            <p className="text-[13px] text-[#6B6B6B]">No risks detected for this change.</p>
           )}
           <div className="space-y-2">
             {p0s.map((r, i) => (
@@ -490,20 +490,20 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
         </section>
 
         {/* Proposed changes */}
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
           <SectionTitle>Proposed changes</SectionTitle>
           <div className="space-y-4">
             <div id="grp-sessions">
-              <div className="mb-1 text-[13px] font-semibold text-gray-900">Sessions ({sessU.length})</div>
+              <div className="mb-1 text-[13px] font-semibold text-[#191919]">Sessions ({sessU.length})</div>
               {sessU.map((u) => {
                 const s = records.sessions.find((s) => s.id === u.pageId);
                 return (
-                  <div key={u.pageId} className="flex items-center justify-between gap-3 border-t border-gray-100 py-2">
+                  <div key={u.pageId} className="flex items-center justify-between gap-3 border-t border-[#F0EFEC] py-2">
                     <span className="text-[13px] font-medium">{s?.name ?? u.pageId}</span>
-                    <span className="text-[13px] text-gray-600">
+                    <span className="text-[13px] text-[#6B6B6B]">
                       Venue: <span className="line-through decoration-gray-400">{maps.venue.get(s?.venueId ?? '')}</span>
-                      <span className="mx-1.5 text-gray-400">→</span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="mx-1.5 text-[#9B9B9B]">→</span>
+                      <span className="font-semibold text-[#191919]">
                         {parsed.type === 'venue_change' ? parsed.params.toVenueName : 'rescheduled'}
                       </span>
                     </span>
@@ -513,28 +513,28 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </div>
 
             <div id="grp-tasks">
-              <div className="mb-1 text-[13px] font-semibold text-gray-900">
+              <div className="mb-1 text-[13px] font-semibold text-[#191919]">
                 Tasks ({taskU.length + plan.newTasks.length})
               </div>
               {taskU.map((u) => {
                 const t = records.tasks.find((t) => t.id === u.pageId);
                 return (
-                  <div key={u.pageId} className="border-t border-gray-100 py-2">
+                  <div key={u.pageId} className="border-t border-[#F0EFEC] py-2">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[13px]">
-                        <span className="line-through decoration-gray-400 text-gray-500">{t?.title}</span>
-                        <span className="mx-1.5 text-gray-400">→</span>
-                        <span className="font-medium text-gray-900">{String(u.props.Title ?? '')}</span>
+                        <span className="line-through decoration-gray-400 text-[#6B6B6B]">{t?.title}</span>
+                        <span className="mx-1.5 text-[#9B9B9B]">→</span>
+                        <span className="font-medium text-[#191919]">{String(u.props.Title ?? '')}</span>
                       </span>
                       <Badge tone="blue">Rewrite</Badge>
                     </div>
-                    <div className="mt-0.5 text-[12px] text-gray-500">Detail text updated with new venue references.</div>
+                    <div className="mt-0.5 text-[12px] text-[#6B6B6B]">Detail text updated with new venue references.</div>
                   </div>
                 );
               })}
               {plan.newTasks.map((t, i) => (
-                <div key={`nt-${i}`} className="flex items-center justify-between gap-3 border-t border-gray-100 py-2">
-                  <span className="text-[13px] font-medium text-gray-900">{t.title}</span>
+                <div key={`nt-${i}`} className="flex items-center justify-between gap-3 border-t border-[#F0EFEC] py-2">
+                  <span className="text-[13px] font-medium text-[#191919]">{t.title}</span>
                   <span className="flex items-center gap-2">
                     <Badge tone={prioTone(t.priority)}>{t.priority}</Badge>
                     <ProvenanceBadge source={t.source} />
@@ -544,11 +544,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </div>
 
             <div id="grp-volunteers">
-              <div className="mb-1 text-[13px] font-semibold text-gray-900">Volunteers ({vols.length})</div>
+              <div className="mb-1 text-[13px] font-semibold text-[#191919]">Volunteers ({vols.length})</div>
               {vols.map((v) => (
-                <div key={v.id} className="flex items-center justify-between gap-3 border-t border-gray-100 py-2">
-                  <span className="text-[13px] font-medium text-gray-900">{v.name}</span>
-                  <span className="text-[12px] text-gray-500">
+                <div key={v.id} className="flex items-center justify-between gap-3 border-t border-[#F0EFEC] py-2">
+                  <span className="text-[13px] font-medium text-[#191919]">{v.name}</span>
+                  <span className="text-[12px] text-[#6B6B6B]">
                     Notify — reconfirm {v.sessionIds.filter((id) => moved.includes(id)).map((id) => maps.session.get(id)).join(', ')}
                   </span>
                 </div>
@@ -556,11 +556,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </div>
 
             <div id="grp-comms">
-              <div className="mb-1 text-[13px] font-semibold text-gray-900">Communications ({plan.newComms.length})</div>
+              <div className="mb-1 text-[13px] font-semibold text-[#191919]">Communications ({plan.newComms.length})</div>
               {plan.newComms.map((c, i) => (
-                <div key={i} className="border-t border-gray-100 py-2">
+                <div key={i} className="border-t border-[#F0EFEC] py-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] font-medium text-gray-900">{c.name}</span>
+                    <span className="text-[13px] font-medium text-[#191919]">{c.name}</span>
                     <span className="flex items-center gap-2">
                       <ProvenanceBadge source={c.source} />
                       <button
@@ -577,7 +577,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
                         value={commsDraft}
                         onChange={(e) => setCommsDraft(e.target.value)}
                         rows={4}
-                        className="w-full rounded-md border border-gray-300 px-2 py-1 text-[13px]"
+                        className="w-full rounded-md border border-[#D9D9D6] px-2 py-1 text-[13px]"
                       />
                       <div className="mt-1 flex gap-2">
                         <Btn onClick={() => saveCommsEdit(i)}>Save</Btn>
@@ -585,9 +585,9 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
                       </div>
                     </div>
                   ) : (
-                    <p className="mt-1 whitespace-pre-line text-[12px] text-gray-600">{c.draft}</p>
+                    <p className="mt-1 whitespace-pre-line text-[12px] text-[#6B6B6B]">{c.draft}</p>
                   )}
-                  <div className="mt-0.5 text-[12px] text-gray-500">{c.audience} · {c.channel} · {c.status}</div>
+                  <div className="mt-0.5 text-[12px] text-[#6B6B6B]">{c.audience} · {c.channel} · {c.status}</div>
                 </div>
               ))}
             </div>
@@ -595,10 +595,10 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
         </section>
 
         {/* Approval bar */}
-        <div className="sticky bottom-0 rounded-lg border border-gray-300 bg-white px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
+        <div className="sticky bottom-0 rounded-lg border border-[#D9D9D6] bg-white px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-[13px] text-gray-700">
-              <span className="font-semibold text-gray-900">{writeCount(plan)} changes proposed</span>
+            <div className="text-[13px] text-[#3d3d3d]">
+              <span className="font-semibold text-[#191919]">{writeCount(plan)} changes proposed</span>
               {p0s.length > 0 && (
                 <span className="ml-2 font-semibold text-red-700">
                   · {p0s.length} critical risk detected
@@ -621,7 +621,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             </div>
           </div>
           {p0s.length > 0 && !applying && (
-            <label className="mt-2 flex cursor-pointer items-start gap-2 text-[12px] text-gray-600">
+            <label className="mt-2 flex cursor-pointer items-start gap-2 text-[12px] text-[#6B6B6B]">
               <input
                 type="checkbox"
                 checked={ackRisk}
@@ -644,11 +644,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
 
   // ----- execution / done -----
   const renderExecuting = () => (
-    <div className="rounded-lg border border-gray-200 bg-white px-4 py-6">
+    <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-6">
       <SectionTitle>Applying changes…</SectionTitle>
       <ul className="space-y-2">
         {execLog.map((l, i) => (
-          <li key={i} className="flex items-center gap-2 text-[13px] text-gray-700">
+          <li key={i} className="flex items-center gap-2 text-[13px] text-[#3d3d3d]">
             <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-100 text-[10px] font-bold text-green-700">✓</span>
             {l}
           </li>
@@ -668,11 +668,11 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
           {fmtDateTime(c.appliedAt ?? '')} · Approved by {c.approvedBy}
         </p>
       </div>
-      <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+      <div className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
         <SectionTitle>Execution</SectionTitle>
         <ul className="space-y-2">
           {execLog.map((l, i) => (
-            <li key={i} className="flex items-center gap-2 text-[13px] text-gray-700">
+            <li key={i} className="flex items-center gap-2 text-[13px] text-[#3d3d3d]">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-100 text-[10px] font-bold text-green-700">✓</span>
               {l}
             </li>
@@ -684,7 +684,7 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             <Btn variant="ghost" onClick={doUndo} className="text-red-700 hover:text-red-800">Undo change</Btn>
           )}
         </div>
-        <p className="mt-2 text-[12px] text-gray-500">Undo reverts the Notion updates and archives created records. The requester or admin can undo.</p>
+        <p className="mt-2 text-[12px] text-[#6B6B6B]">Undo reverts the Notion updates and archives created records. The requester or admin can undo.</p>
       </div>
     </div>
   );
@@ -693,12 +693,12 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Changes</h1>
+        <h1 className="text-[20px] font-semibold tracking-tight text-[#191919]">Changes</h1>
         {!showNew && !active && <Btn variant="primary" onClick={() => setShowNew(true)}>New change</Btn>}
       </div>
 
       {showNew && !active && (
-        <section className="rounded-lg border border-gray-200 bg-white px-4 py-4">
+        <section className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-4">
           <SectionTitle>New change</SectionTitle>
           {changes.find((c) => c.status === 'draft' && c.cancelNote) && (
             <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
@@ -710,9 +710,9 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
             onChange={(e) => setInput(e.target.value)}
             rows={3}
             placeholder="Describe an operational change…"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+            className="w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
           />
-          <div className="mt-1 text-[12px] text-gray-500">
+          <div className="mt-1 text-[12px] text-[#6B6B6B]">
             Example: “Move all sessions from Main Audi to Seminar Hall B.”
           </div>
           {parseError && <p className="mt-2 text-[13px] font-medium text-red-700">{parseError}</p>}
@@ -731,9 +731,9 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
       {active?.status === 'applying' && renderExecuting()}
       {active?.status === 'applied' && renderDone(active)}
       {active?.status === 'undone' && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-4">
-          <div className="text-[15px] font-semibold text-gray-900">Change undone</div>
-          <p className="mt-1 text-[13px] text-gray-600">
+        <div className="rounded-lg border border-[#E8E8E6] bg-[#F5F5F3] px-4 py-4">
+          <div className="text-[15px] font-semibold text-[#191919]">Change undone</div>
+          <p className="mt-1 text-[13px] text-[#6B6B6B]">
             Reverted {fmtDateTime(active.undoneAt ?? '')}. Notion records restored to previous values; created records archived.
           </p>
         </div>
@@ -748,16 +748,16 @@ export default function Changes({ records, maps, changes, setChanges, refreshRec
               action={<Btn variant="primary" onClick={() => setShowNew(true)}>New change</Btn>}
             />
           ) : (
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div className="overflow-hidden rounded-lg border border-[#E8E8E6] bg-white">
               {history.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => (c.status === 'analyzed' || c.status === 'applied' || c.status === 'undone' ? setActiveId(c.id) : null)}
-                  className="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 text-left last:border-0 hover:bg-gray-50"
+                  className="flex w-full items-center justify-between gap-3 border-b border-[#F0EFEC] px-4 py-3 text-left last:border-0 hover:bg-[#F5F5F3]"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-[13px] font-medium text-gray-900">{c.input}</div>
-                    <div className="mt-0.5 text-[12px] text-gray-500">{fmtDateTime(c.createdAt)}</div>
+                    <div className="truncate text-[13px] font-medium text-[#191919]">{c.input}</div>
+                    <div className="mt-0.5 text-[12px] text-[#6B6B6B]">{fmtDateTime(c.createdAt)}</div>
                   </div>
                   <Badge
                     tone={

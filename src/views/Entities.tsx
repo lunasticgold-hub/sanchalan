@@ -27,9 +27,9 @@ function Drawer({ title, onClose, children }: { title: string; onClose: () => vo
         className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl select-text"
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <div className="text-[15px] font-semibold text-gray-900">{title}</div>
-          <button onClick={onClose} className="rounded px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100">✕</button>
+        <div className="flex items-center justify-between border-b border-[#E8E8E6] px-4 py-3">
+          <div className="text-[15px] font-semibold text-[#191919]">{title}</div>
+          <button onClick={onClose} className="rounded px-2 py-1 text-[13px] text-[#6B6B6B] hover:bg-[#EFEFEA]">✕</button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">{children}</div>
       </div>
@@ -39,9 +39,9 @@ function Drawer({ title, onClose, children }: { title: string; onClose: () => vo
 
 function Rel({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="border-b border-gray-100 py-2 last:border-0">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-0.5 text-[13px] text-gray-800">{value}</div>
+    <div className="border-b border-[#F0EFEC] py-2 last:border-0">
+      <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">{label}</div>
+      <div className="mt-0.5 text-[13px] text-[#2b2b2b]">{value}</div>
     </div>
   );
 }
@@ -66,7 +66,7 @@ export function AttendeesView({ records, maps }: { records: Records; maps: Maps 
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-[20px] font-semibold tracking-tight">Attendees</h1>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-md border border-gray-300 bg-white px-2 py-1 text-[13px]">
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-md border border-[#D9D9D6] bg-white px-2 py-1 text-[13px]">
           <option value="all">All ({total})</option>
           <option value="checked">Checked in ({checked})</option>
           <option value="missing">Not checked in ({total - checked})</option>
@@ -81,9 +81,9 @@ export function AttendeesView({ records, maps }: { records: Records; maps: Maps 
           ['Not checked in', String(total - checked)],
           ['Check-in rate', total ? `${Math.round((checked / total) * 100)}%` : '—'],
         ].map(([l, v]) => (
-          <div key={l} className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="text-[20px] font-semibold text-gray-900">{v}</div>
-            <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{l}</div>
+          <div key={l} className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+            <div className="text-[20px] font-semibold text-[#191919]">{v}</div>
+            <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">{l}</div>
           </div>
         ))}
       </div>
@@ -94,9 +94,9 @@ export function AttendeesView({ records, maps }: { records: Records; maps: Maps 
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Name</th><th className={th}>Ticket</th><th className={th}>Organization</th>
               <th className={th}>Check-in</th><th className={th}>Sessions</th>
@@ -151,9 +151,9 @@ export function SpeakersView({ records, maps }: { records: Records; maps: Maps }
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Speakers</h1>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Speaker</th><th className={th}>Session</th><th className={th}>Readiness</th>
               <th className={th}>Arrival</th><th className={th}>Confirmation</th>
@@ -185,13 +185,13 @@ export function SpeakersView({ records, maps }: { records: Records; maps: Maps }
       {s && (
         <Drawer title={s.name} onClose={() => setSel(null)}>
           <Rel label="Session" value={maps.session.get(s.sessionId) ?? '—'} />
-          <div className="border-b border-gray-100 py-2">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Readiness</div>
+          <div className="border-b border-[#F0EFEC] py-2">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Readiness</div>
             <div className="mt-1 space-y-1">
               {readiness(s).map(([label, ok]) => (
                 <div key={label} className="flex items-center gap-2 text-[13px]">
                   <span className={ok ? 'text-green-600' : 'text-amber-600'}>{ok ? '✓' : '⚠'}</span>
-                  <span className={ok ? 'text-gray-700' : 'text-gray-900 font-medium'}>{label}{ok ? '' : ' — missing'}</span>
+                  <span className={ok ? 'text-[#3d3d3d]' : 'text-[#191919] font-medium'}>{label}{ok ? '' : ' — missing'}</span>
                 </div>
               ))}
             </div>
@@ -214,9 +214,9 @@ export function SponsorsView({ records }: { records: Records }) {
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Sponsors</h1>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Company</th><th className={th}>Tier</th><th className={th}>Booth</th>
               <th className={th}>Deliverables</th><th className={th}>Payment</th>
@@ -240,11 +240,11 @@ export function SponsorsView({ records }: { records: Records }) {
           <Rel label="Tier" value={s.tier} />
           <Rel label="Contact" value={s.contact} />
           <Rel label="Booth" value={s.booth} />
-          <div className="border-b border-gray-100 py-2">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Deliverables</div>
+          <div className="border-b border-[#F0EFEC] py-2">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">Deliverables</div>
             <div className="mt-1 space-y-1">
               {s.deliverables.map((d) => (
-                <div key={d} className="flex items-center gap-2 text-[13px] text-gray-700">
+                <div key={d} className="flex items-center gap-2 text-[13px] text-[#3d3d3d]">
                   <span className="text-green-600">✓</span>{d}
                 </div>
               ))}

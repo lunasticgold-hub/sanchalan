@@ -31,9 +31,9 @@ function Drawer({ title, onClose, children }: { title: string; onClose: () => vo
         className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl select-text"
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <div className="text-[15px] font-semibold text-gray-900">{title}</div>
-          <button onClick={onClose} className="rounded px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100">✕</button>
+        <div className="flex items-center justify-between border-b border-[#E8E8E6] px-4 py-3">
+          <div className="text-[15px] font-semibold text-[#191919]">{title}</div>
+          <button onClick={onClose} className="rounded px-2 py-1 text-[13px] text-[#6B6B6B] hover:bg-[#EFEFEA]">✕</button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">{children}</div>
       </div>
@@ -43,9 +43,9 @@ function Drawer({ title, onClose, children }: { title: string; onClose: () => vo
 
 function Rel({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="border-b border-gray-100 py-2 last:border-0">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-0.5 text-[13px] text-gray-800">{value}</div>
+    <div className="border-b border-[#F0EFEC] py-2 last:border-0">
+      <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">{label}</div>
+      <div className="mt-0.5 text-[13px] text-[#2b2b2b]">{value}</div>
     </div>
   );
 }
@@ -87,7 +87,7 @@ export function SessionsView({ records, maps, isCustom, onAdd }: { records: Reco
           <select
             value={venueFilter}
             onChange={(e) => setVenueFilter(e.target.value)}
-            className="rounded-md border border-gray-300 bg-white px-2 py-1 text-[13px]"
+            className="rounded-md border border-[#D9D9D6] bg-white px-2 py-1 text-[13px]"
           >
             <option value="all">All venues</option>
             {records.venues.map((v) => (
@@ -96,9 +96,9 @@ export function SessionsView({ records, maps, isCustom, onAdd }: { records: Reco
           </select>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Session</th><th className={th}>Time</th><th className={th}>Venue</th>
               <th className={th}>Speaker</th><th className={th}>Format</th><th className={th}>Status</th>
@@ -118,7 +118,7 @@ export function SessionsView({ records, maps, isCustom, onAdd }: { records: Reco
                   <td className={td}>{x.format}</td>
                   <td className={td}><Badge tone={statusTone(x.status)}>{x.status}</Badge></td>
                   <td className={td}>{vols.map((v) => v.name).join(', ') || '—'}</td>
-                  <td className={td}>{risk ? <Badge tone="red">{risk}</Badge> : <span className="text-gray-400">—</span>}</td>
+                  <td className={td}>{risk ? <Badge tone="red">{risk}</Badge> : <span className="text-[#9B9B9B]">—</span>}</td>
                 </tr>
               );
             })}
@@ -160,7 +160,7 @@ export function TasksView({ records, maps, isCustom, onAdd }: { records: Records
               onClick={() => setFilter(f)}
               className={cx(
                 'rounded-md px-2.5 py-1 text-[12px] font-semibold',
-                filter === f ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 ring-1 ring-inset ring-gray-200 hover:bg-gray-50',
+                filter === f ? 'bg-[#191919] text-white' : 'bg-white text-[#6B6B6B] ring-1 ring-inset ring-[#E8E8E6] hover:bg-[#F5F5F3]',
               )}
             >
               {f === 'all' ? 'All' : f}
@@ -169,9 +169,9 @@ export function TasksView({ records, maps, isCustom, onAdd }: { records: Records
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Task</th><th className={th}>Session</th><th className={th}>Owner</th>
               <th className={th}>Due</th><th className={th}>Status</th><th className={th}>Priority</th><th className={th}>Source</th>
@@ -219,9 +219,9 @@ export function VolunteersView({ records, maps, isCustom, onAdd }: { records: Re
           <QuickAdd title="Volunteer" fields={[{ key: 'name', label: 'Name *' }, { key: 'role', label: 'Role' }, { key: 'shift', label: 'Shift' }]} onAdd={onAdd} />
         )}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Name</th><th className={th}>Role</th><th className={th}>Assigned sessions</th>
               <th className={th}>Shift</th><th className={th}>Skills</th><th className={th}>Contact</th>
@@ -267,9 +267,9 @@ export function VenuesView({ records, isCustom, onAdd }: { records: Records; isC
           <QuickAdd title="Venue" fields={[{ key: 'name', label: 'Venue name *' }, { key: 'capacity', label: 'Capacity', type: 'number' }, { key: 'location', label: 'Location' }]} onAdd={onAdd} />
         )}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Venue</th><th className={th}>Capacity</th><th className={th}>Location</th>
               <th className={th}>Equipment</th><th className={th}>Current bookings</th><th className={th}>Availability</th>
@@ -339,9 +339,9 @@ export function CommsView({ records }: { records: Records }) {
   return (
     <div className="space-y-4">
       <h1 className="text-[20px] font-semibold tracking-tight">Communications</h1>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr>
               <th className={th}>Message</th><th className={th}>Audience</th><th className={th}>Channel</th>
               <th className={th}>Related event</th><th className={th}>Status</th><th className={th}>Source</th>
@@ -368,14 +368,14 @@ export function CommsView({ records }: { records: Records }) {
           <Rel label="Status" value={<Badge tone={statusTone(c.status)}>{c.status}</Badge>} />
           <Rel label="Source" value={<ProvenanceBadge source={c.source} />} />
           <Rel label="Draft" value={<span className="whitespace-pre-line">{c.draft}</span>} />
-          <div className="mt-4 border-t border-gray-100 pt-4">
-            <div className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-gray-500">Send this message</div>
+          <div className="mt-4 border-t border-[#F0EFEC] pt-4">
+            <div className="mb-2 text-[12px] font-semibold uppercase tracking-wide text-[#6B6B6B]">Send this message</div>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(c.draft);
                 }}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-[#D9D9D6] px-3 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]"
               >
                 Copy for WhatsApp
               </button>
@@ -389,20 +389,20 @@ export function CommsView({ records }: { records: Records }) {
               </a>
               <a
                 href={`mailto:?subject=${encodeURIComponent(c.name)}&body=${encodeURIComponent(c.draft)}`}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-[#D9D9D6] px-3 py-1.5 text-[13px] font-medium text-[#3d3d3d] hover:bg-[#F5F5F3]"
               >
                 Send via Email
               </a>
               <button
                 onClick={sendEmail}
                 disabled={sending}
-                className="rounded-md bg-gray-900 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="rounded-md bg-[#191919] px-3 py-1.5 text-[13px] font-medium text-white hover:bg-[#2e2e2e] disabled:opacity-50"
               >
                 {sending ? 'Sending…' : 'Send email now'}
               </button>
             </div>
-            {sendMsg && <p className="mt-2 text-[13px] font-medium text-gray-700">{sendMsg}</p>}
-            <p className="mt-2 text-[12px] text-gray-500">
+            {sendMsg && <p className="mt-2 text-[13px] font-medium text-[#3d3d3d]">{sendMsg}</p>}
+            <p className="mt-2 text-[12px] text-[#6B6B6B]">
               Copy the message into your WhatsApp group, or send it through your email. Automated delivery via email API and WhatsApp Business is on the roadmap.
             </p>
           </div>

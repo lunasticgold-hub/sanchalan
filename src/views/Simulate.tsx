@@ -23,9 +23,9 @@ function ImpactSummary({ plan }: { plan: ImpactPlan }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {counts.map(([l, v]) => (
-        <div key={l} className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-          <div className="text-[20px] font-semibold text-gray-900">{v}</div>
-          <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{l} affected</div>
+        <div key={l} className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
+          <div className="text-[20px] font-semibold text-[#191919]">{v}</div>
+          <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B6B6B]">{l} affected</div>
         </div>
       ))}
     </div>
@@ -67,15 +67,15 @@ export default function Simulate({
     <div className="space-y-6">
       <div>
         <h1 className="text-[20px] font-semibold tracking-tight">Scenario Mode</h1>
-        <p className="mt-1 text-[13px] text-gray-500">Ask "what if" — see the impact with zero writes. Convert to a change request when ready.</p>
+        <p className="mt-1 text-[13px] text-[#6B6B6B]">Ask "what if" — see the impact with zero writes. Convert to a change request when ready.</p>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-[#E8E8E6]">
         {([['scenario', 'What-if analysis'], ['venue', 'Find venue'], ['volunteer', 'Find volunteers']] as const).map(([k, l]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
-            className={`px-3 py-2 text-[13px] font-medium ${tab === k ? 'border-b-2 border-gray-900 text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`px-3 py-2 text-[13px] font-medium ${tab === k ? 'border-b-2 border-gray-900 text-[#191919]' : 'text-[#6B6B6B] hover:text-[#2b2b2b]'}`}
           >{l}</button>
         ))}
       </div>
@@ -88,7 +88,7 @@ export default function Simulate({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && analyze()}
               placeholder='e.g. "What if Main Audi is unavailable?"'
-              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-500 focus:outline-none"
+              className="flex-1 rounded-md border border-[#D9D9D6] px-3 py-2 text-[14px] focus:border-gray-500 focus:outline-none"
             />
             <Btn variant="primary" onClick={analyze} disabled={busy || !input.trim()}>{busy ? 'Analyzing…' : 'Simulate'}</Btn>
           </div>
@@ -97,7 +97,7 @@ export default function Simulate({
             <div className="space-y-4">
               <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
                 <div className="text-[12px] font-semibold uppercase tracking-wide text-blue-700">Simulation — no changes applied</div>
-                <div className="mt-1 text-[14px] text-gray-800">{result.plan.summary}</div>
+                <div className="mt-1 text-[14px] text-[#2b2b2b]">{result.plan.summary}</div>
               </div>
               <ImpactSummary plan={result.plan} />
               {result.plan.risks.length > 0 && (
@@ -105,9 +105,9 @@ export default function Simulate({
                   <SectionTitle>Risks detected</SectionTitle>
                   <div className="space-y-2">
                     {result.plan.risks.map((r, i) => (
-                      <div key={i} className="flex items-start gap-2 rounded-md border border-gray-200 bg-white px-3 py-2">
+                      <div key={i} className="flex items-start gap-2 rounded-md border border-[#E8E8E6] bg-white px-3 py-2">
                         <Badge tone={prioTone(r.level)}>{r.level}</Badge>
-                        <span className="text-[13px] text-gray-700">{r.text}</span>
+                        <span className="text-[13px] text-[#3d3d3d]">{r.text}</span>
                       </div>
                     ))}
                   </div>
@@ -153,15 +153,15 @@ function VenueFinder({ records, onSimulate }: { records: Records; onSimulate: (t
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-gray-600">Find a venue for</span>
-        <select value={sessionId} onChange={(e) => setSessionId(e.target.value)} className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-[13px]">
+        <span className="text-[13px] text-[#6B6B6B]">Find a venue for</span>
+        <select value={sessionId} onChange={(e) => setSessionId(e.target.value)} className="rounded-md border border-[#D9D9D6] bg-white px-2 py-1.5 text-[13px]">
           {records.sessions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-        {currentVenue && <span className="text-[13px] text-gray-500">currently: {currentVenue.name}</span>}
+        {currentVenue && <span className="text-[13px] text-[#6B6B6B]">currently: {currentVenue.name}</span>}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr><th className={th}>Venue</th><th className={th}>Capacity</th><th className={th}>Equipment</th><th className={th}>Availability</th><th className={th}></th></tr>
           </thead>
           <tbody>
@@ -201,21 +201,21 @@ function VolunteerFinder({ records }: { records: Records }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-gray-600">Find volunteers:</span>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-[13px]">
+        <span className="text-[13px] text-[#6B6B6B]">Find volunteers:</span>
+        <select value={role} onChange={(e) => setRole(e.target.value)} className="rounded-md border border-[#D9D9D6] bg-white px-2 py-1.5 text-[13px]">
           <option value="all">Any role</option>
           {roles.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
-        <select value={shift} onChange={(e) => setShift(e.target.value)} className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-[13px]">
+        <select value={shift} onChange={(e) => setShift(e.target.value)} className="rounded-md border border-[#D9D9D6] bg-white px-2 py-1.5 text-[13px]">
           <option value="all">Any shift</option>
           <option value="Morning">Morning</option>
           <option value="Afternoon">Afternoon</option>
           <option value="Full-day">Full-day</option>
         </select>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#E8E8E6] bg-white">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#F5F5F3]">
             <tr><th className={th}>Volunteer</th><th className={th}>Role</th><th className={th}>Shift</th><th className={th}>Workload</th><th className={th}>Skills</th></tr>
           </thead>
           <tbody>
@@ -237,7 +237,7 @@ function VolunteerFinder({ records }: { records: Records }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[12px] text-gray-500">Assignment requires human approval — propose candidates in a change request before updating Notion.</p>
+      <p className="text-[12px] text-[#6B6B6B]">Assignment requires human approval — propose candidates in a change request before updating Notion.</p>
     </div>
   );
 }

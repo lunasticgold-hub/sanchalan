@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Sidebar, { type View } from './components/Sidebar';
+import Topbar from './components/Topbar';
 import Overview from './views/Overview';
 import Live from './views/Live';
 import Preflight from './views/Preflight';
@@ -16,7 +17,6 @@ import ImpactReports from './views/ImpactReports';
 import NotionStatus from './views/NotionStatus';
 import { fetchAllRecords } from './lib/api';
 import type { ChangeRequest, Records } from './lib/types';
-import { cx } from './components/ui';
 import { Linkify } from './components/ui';
 import Auth from './components/Auth';
 import Logo from './components/Logo';
@@ -79,7 +79,7 @@ function CommandPalette({ records, onGo, onClose }: { records: Records; onGo: (v
               </button>
             ))}
             {q.trim() && results.length === 0 && (
-              <div className="px-4 py-3 text-[13px] text-gray-500">No matches.</div>
+              <div className="px-4 py-3 text-[13px] text-[#6B6B6B]">No matches.</div>
             )}
           </div>
         </div>
@@ -95,6 +95,7 @@ export default function Dashboard() {
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [view, setView] = useState<View>('overview');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [changes, setChanges] = useState<ChangeRequest[]>([]);
   const [selectedImpactId, setSelectedImpactId] = useState<string | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
@@ -207,7 +208,7 @@ export default function Dashboard() {
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#fafafa] text-[13px] text-gray-500">
+      <div className="flex h-screen items-center justify-center bg-[#FBFBFA] text-[13px] text-[#6B6B6B]">
         Loading…
       </div>
     );
@@ -219,7 +220,7 @@ export default function Dashboard() {
 
   if (loading || !records || !maps) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#fafafa] text-[13px] text-gray-500">
+      <div className="flex h-screen items-center justify-center bg-[#FBFBFA] text-[13px] text-[#6B6B6B]">
         Loading workspace…
       </div>
     );
@@ -229,13 +230,13 @@ export default function Dashboard() {
   if (!activeEventId) {
     const demoEvent = (records.events ?? [])[0];
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#FBFBFA] px-4">
         <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900">
             <div className="h-5 w-5 rounded-full border-2 border-white" />
           </div>
           <h1 className="text-[22px] font-bold tracking-tight text-gray-900">Welcome to Sanchalan</h1>
-          <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-gray-500">
+          <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-[#6B6B6B]">
             Create your first event to start running it — or connect your Notion workspace and pull your real data.
           </p>
           <button
@@ -308,7 +309,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fafafa] text-gray-900">
+    <div className="flex min-h-screen bg-[#FBFBFA] text-[#191919]">
       <Sidebar
         view={view}
         setView={goView}
@@ -320,26 +321,25 @@ export default function Dashboard() {
         onAddEvent={() => setShowAddEvent(true)}
         userEmail={user?.email}
         onSignOut={() => supabase?.auth.signOut()}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
       />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-6xl px-6 py-6">
-          <div className="mb-4 flex items-center justify-end">
-            <button
-              onClick={() => setPalette(true)}
-              className={cx(
-                'flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5',
-                'text-[12px] text-gray-500 hover:border-gray-300 hover:text-gray-700',
-              )}
-            >
-              <span>Search…</span>
-              <kbd className="rounded border border-gray-200 bg-gray-50 px-1 font-mono text-[10px]">⌘K</kbd>
-            </button>
-          </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar
+          view={view}
+          eventName={events.find((e) => e.id === activeEventId)?.name}
+          onOpenSearch={() => setPalette(true)}
+          onOpenNotion={() => goView('notion')}
+          connected={!demo}
+          pendingInbox={pendingCount}
+        />
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
 
           {demo && (
-            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800">
-              Demo data — connect Notion (NOTION_TOKEN) to go live.
+            <div className="mb-4 rounded-[6px] border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800">
+              Demo data — connect Notion to go live.
             </div>
           )}
 
@@ -399,13 +399,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Logo size={18} />
-                <span className="text-[11px] font-medium text-gray-500">Sanchalan · Kaun Banega Codepati 2026 (KBC-NOTION-03)</span>
+                <span className="text-[11px] font-medium text-[#9B9B9B]">Sanchalan · Kaun Banega Codepati 2026 (KBC-NOTION-03)</span>
               </div>
-              <span className="text-[11px] text-gray-400">Notion is the system of record</span>
+              <span className="text-[11px] text-[#9B9B9B]">Notion is the system of record</span>
             </div>
           </footer>
         </div>
       </main>
+      </div>
 
       {palette && <CommandPalette records={activeRecords} onGo={goView} onClose={() => setPalette(false)} />}
 
@@ -482,7 +483,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-1 text-[16px] font-semibold text-gray-900">Add your event</div>
-        <div className="mb-5 text-[12px] font-medium text-gray-500">Step {step} of 4</div>
+        <div className="mb-5 text-[12px] font-medium text-[#6B6B6B]">Step {step} of 4</div>
 
         {step === 1 && (
           <div className="space-y-3">
@@ -539,7 +540,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
                 Discover databases
               </button>
             )}
-            {discovering && <p className="text-[13px] text-gray-500">Scanning your Notion workspace…</p>}
+            {discovering && <p className="text-[13px] text-[#6B6B6B]">Scanning your Notion workspace…</p>}
             {discoverErr && <p className="text-[13px] text-red-600">{discoverErr}</p>}
             {discovered && (
               <div className="space-y-1.5">
@@ -580,7 +581,7 @@ function AddEventWizard({ onClose, onAdd }: { onClose: () => void; onAdd: (e: Ne
         )}
 
         <div className="mt-6 flex justify-between">
-          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-500 hover:bg-gray-100">Cancel</button>
+          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[#6B6B6B] hover:bg-gray-100">Cancel</button>
           <div className="flex gap-2">
             {step > 1 && (
               <button onClick={() => setStep(step - 1)} className="rounded-md border border-gray-300 px-4 py-1.5 text-[13px] font-medium text-gray-700">Back</button>

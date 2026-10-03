@@ -140,62 +140,62 @@ export default function ConnectNotionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="text-[16px] font-semibold text-gray-900">Connect Notion</div>
-        <p className="mt-1 text-[13px] text-gray-500">Paste a Notion page link — Sanchalan finds all databases on it automatically.</p>
+        <div className="text-[16px] font-semibold text-[#191919]">Connect Notion</div>
+        <p className="mt-1 text-[13px] text-[#6B6B6B]">Paste a Notion page link — Sanchalan finds all databases on it automatically.</p>
 
         {done !== null ? (
           <div className="mt-4 rounded-lg bg-green-50 p-4 text-center">
             <div className="text-[15px] font-semibold text-green-800">✓ Synced {done} records from Notion</div>
-            <button onClick={onClose} className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800">Done</button>
+            <button onClick={onClose} className="mt-3 rounded-lg bg-[#191919] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2e2e2e]">Done</button>
           </div>
         ) : (
           <div className="mt-4 space-y-4">
             {/* Mode tabs */}
-            <div className="flex rounded-lg bg-gray-100 p-1">
+            <div className="flex rounded-lg bg-[#EFEFEA] p-1">
               <button
                 onClick={() => setMode('link')}
-                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'link' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'link' ? 'bg-white text-[#191919] shadow-sm' : 'text-[#6B6B6B]'}`}
               >
                 Paste page link
               </button>
               <button
                 onClick={() => setMode('token')}
-                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'token' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                className={`flex-1 rounded-md py-1.5 text-[13px] font-medium ${mode === 'token' ? 'bg-white text-[#191919] shadow-sm' : 'text-[#6B6B6B]'}`}
               >
                 Browse all databases
               </button>
             </div>
 
             <div>
-              <label className="mb-1 block text-[13px] font-medium text-gray-700">Notion integration token</label>
+              <label className="mb-1 block text-[13px] font-medium text-[#3d3d3d]">Notion integration token</label>
               <input
                 type="password"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="ntn_..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-[13px] outline-none focus:border-gray-500"
+                className="w-full rounded-md border border-[#D9D9D6] px-3 py-2 text-[13px] outline-none focus:border-gray-500"
               />
             </div>
 
             {mode === 'link' ? (
               <div>
-                <label className="mb-1 block text-[13px] font-medium text-gray-700">Notion page link</label>
+                <label className="mb-1 block text-[13px] font-medium text-[#3d3d3d]">Notion page link</label>
                 <div className="flex gap-2">
                   <input
                     value={pageLink}
                     onChange={(e) => setPageLink(e.target.value)}
                     placeholder="https://notion.so/..."
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-[13px] outline-none focus:border-gray-500"
+                    className="flex-1 rounded-md border border-[#D9D9D6] px-3 py-2 text-[13px] outline-none focus:border-gray-500"
                   />
                   <button
                     onClick={discoverFromLink}
                     disabled={!token.trim() || !pageLink.trim() || discovering}
-                    className="rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-40"
+                    className="rounded-md bg-[#191919] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2e2e2e] disabled:opacity-40"
                   >
                     {discovering ? 'Reading…' : 'Find databases'}
                   </button>
                 </div>
-                <p className="mt-1.5 text-[12px] text-gray-500">
+                <p className="mt-1.5 text-[12px] text-[#6B6B6B]">
                   Copy the link of the Notion page holding your databases. Share just that <strong>one page</strong> with your integration: open it → ••• → Add connections.
                 </p>
               </div>
@@ -204,11 +204,11 @@ export default function ConnectNotionModal({
                 <button
                   onClick={discover}
                   disabled={!token.trim() || discovering}
-                  className="w-full rounded-md bg-gray-900 px-4 py-2 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-40"
+                  className="w-full rounded-md bg-[#191919] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2e2e2e] disabled:opacity-40"
                 >
                   {discovering ? 'Finding…' : 'Find all my databases'}
                 </button>
-                <p className="mt-1.5 text-[12px] text-gray-500">
+                <p className="mt-1.5 text-[12px] text-[#6B6B6B]">
                   Searches your whole workspace. Share each database first: open it → ••• → Add connections.
                 </p>
               </div>
@@ -232,19 +232,19 @@ export default function ConnectNotionModal({
 
             {discovered && (
               <div>
-                <div className="mb-2 text-[13px] font-medium text-gray-700">
+                <div className="mb-2 text-[13px] font-medium text-[#3d3d3d]">
                   Found {discovered.length} database{discovered.length === 1 ? '' : 's'}{pageTitle ? ` on "${pageTitle}"` : ''}
                 </div>
-                <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-[#E8E8E6] p-2">
                   {EXPECTED.map(([key, expected]) => {
                     const m = matchDb(expected);
                     return (
                       <div key={key} className="flex items-center justify-between px-2 py-1 text-[13px]">
-                        <span className="text-gray-600">{expected}</span>
+                        <span className="text-[#6B6B6B]">{expected}</span>
                         {m ? (
                           <span className="font-medium text-green-700">✓ {m.name}</span>
                         ) : (
-                          <span className="text-gray-400">not found</span>
+                          <span className="text-[#9B9B9B]">not found</span>
                         )}
                       </div>
                     );
@@ -254,7 +254,7 @@ export default function ConnectNotionModal({
                 <button
                   onClick={sync}
                   disabled={syncing}
-                  className="mt-3 w-full rounded-lg bg-gray-900 py-2.5 text-[14px] font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
+                  className="mt-3 w-full rounded-lg bg-[#191919] py-2.5 text-[14px] font-semibold text-white hover:bg-[#2e2e2e] disabled:opacity-50"
                 >
                   {syncing ? 'Syncing from Notion…' : '↓ Sync from Notion'}
                 </button>
@@ -262,7 +262,7 @@ export default function ConnectNotionModal({
             )}
 
             <div className="flex justify-end">
-              <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-gray-500 hover:bg-gray-100">Cancel</button>
+              <button onClick={onClose} className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[#6B6B6B] hover:bg-[#EFEFEA]">Cancel</button>
             </div>
           </div>
         )}

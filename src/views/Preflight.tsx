@@ -85,20 +85,20 @@ export default function Preflight({ records, setView }: { records: Records; setV
     <div className="space-y-6">
       <div>
         <h1 className="text-[20px] font-semibold tracking-tight">Event Pre-flight</h1>
-        <p className="mt-1 text-[13px] text-gray-500">Readiness check across every operational category. Run before doors open.</p>
+        <p className="mt-1 text-[13px] text-[#6B6B6B]">Readiness check across every operational category. Run before doors open.</p>
       </div>
       <section>
         <SectionTitle>Checklist</SectionTitle>
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-[#E8E8E6] bg-white">
           {checks.map((c) => (
             <button
               key={c.label}
               onClick={() => setView(c.view)}
-              className="flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3 text-left last:border-0 hover:bg-gray-50"
+              className="flex w-full items-center gap-3 border-b border-[#F0EFEC] px-4 py-3 text-left last:border-0 hover:bg-[#F5F5F3]"
             >
               {icon(c.state)}
-              <span className="w-36 text-[14px] font-medium text-gray-900">{c.label}</span>
-              <span className="flex-1 text-[13px] text-gray-600">{c.detail}</span>
+              <span className="w-36 text-[14px] font-medium text-[#191919]">{c.label}</span>
+              <span className="flex-1 text-[13px] text-[#6B6B6B]">{c.detail}</span>
               <span className="text-[12px] text-blue-600">View →</span>
             </button>
           ))}

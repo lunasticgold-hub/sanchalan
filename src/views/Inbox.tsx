@@ -77,12 +77,12 @@ export default function Inbox({
               <button
                 key={it.id}
                 onClick={() => setView(it.view)}
-                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300"
+                className="flex w-full items-center gap-3 rounded-lg border border-[#E8E8E6] bg-white px-4 py-3 text-left hover:border-[#D9D9D6]"
               >
                 <Badge tone={tone(it.kind)}>{it.kind === 'Critical' ? 'P0' : it.kind}</Badge>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] font-medium text-gray-900">{it.title}</div>
-                  <div className="truncate text-[12px] text-gray-500">{it.detail}</div>
+                  <div className="truncate text-[14px] font-medium text-[#191919]">{it.title}</div>
+                  <div className="truncate text-[12px] text-[#6B6B6B]">{it.detail}</div>
                 </div>
                 <span className="shrink-0 text-[12px] text-blue-600">Open →</span>
               </button>

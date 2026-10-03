@@ -1,5 +1,5 @@
-// Small shared primitives: badges, buttons, section headers, stats, empty states.
-// Neutral enterprise styling — color only for meaning.
+// Sanchalan design system primitives.
+// Notion-inspired restraint: quiet surfaces, subtle borders, color only for meaning.
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { useState } from 'react';
@@ -8,7 +8,7 @@ export const cx = (...parts: Array<string | false | null | undefined>) =>
   parts.filter(Boolean).join(' ');
 
 const badgeTones: Record<string, string> = {
-  gray: 'bg-gray-100 text-gray-700 ring-gray-200',
+  gray: 'bg-[#F5F5F3] text-[#6B6B6B] ring-[#E8E8E6]',
   green: 'bg-green-50 text-green-700 ring-green-200',
   amber: 'bg-amber-50 text-amber-800 ring-amber-200',
   red: 'bg-red-50 text-red-700 ring-red-200',
@@ -18,7 +18,7 @@ const badgeTones: Record<string, string> = {
   solidGray: 'bg-gray-400 text-white',
   solidGreen: 'bg-green-600 text-white',
   solidBlue: 'bg-blue-600 text-white',
-  solidBlack: 'bg-gray-900 text-white',
+  solidBlack: 'bg-[#191919] text-white',
 };
 
 export function Badge({
@@ -33,7 +33,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        'inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset',
+        'inline-flex shrink-0 items-center rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset',
         badgeTones[tone],
         className,
       )}
@@ -76,15 +76,15 @@ type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Btn({ variant = 'secondary', className, ...rest }: BtnProps) {
   const styles = {
-    primary: 'bg-gray-900 text-white hover:bg-gray-700 border-gray-900',
-    secondary: 'bg-white text-gray-800 hover:bg-gray-50 border-gray-300',
+    primary: 'bg-[#191919] text-white hover:bg-[#2e2e2e] border-[#191919]',
+    secondary: 'bg-white text-[#191919] hover:bg-[#F5F5F3] border-[#E8E8E6]',
     danger: 'bg-red-600 text-white hover:bg-red-500 border-red-600',
-    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 border-transparent',
+    ghost: 'bg-transparent text-[#6B6B6B] hover:bg-[#F5F5F3] hover:text-[#191919] border-transparent',
   }[variant];
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex items-center justify-center gap-1.5 rounded-[6px] border px-3 py-1.5 text-[13px] font-medium transition-quiet disabled:cursor-not-allowed disabled:opacity-40',
         styles,
         className,
       )}
@@ -104,18 +104,63 @@ export function SectionTitle({
 }) {
   return (
     <div className={cx('mb-3 flex items-center justify-between', className)}>
-      <h2 className="text-[13px] font-semibold uppercase tracking-wide text-gray-500">{children}</h2>
+      <h2 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#6B6B6B]">{children}</h2>
       {action}
+    </div>
+  );
+}
+
+/* Page header: title + metadata + primary action. Replaces oversized hero headers. */
+export function PageHeader({
+  title,
+  meta,
+  action,
+  back,
+}: {
+  title: ReactNode;
+  meta?: ReactNode;
+  action?: ReactNode;
+  back?: { label: string; onClick: () => void };
+}) {
+  return (
+    <div className="mb-5">
+      {back && (
+        <button onClick={back.onClick} className="mb-2 flex items-center gap-1 text-[13px] text-[#6B6B6B] hover:text-[#191919] transition-quiet">
+          <span aria-hidden>←</span> {back.label}
+        </button>
+      )}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[#191919]">{title}</h1>
+          {meta && <div className="mt-1 text-[13px] text-[#6B6B6B]">{meta}</div>}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* Skeleton rows for loading states */
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cx('skeleton', className)} aria-hidden />;
+}
+
+export function SkeletonTable({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="space-y-2" role="status" aria-label="Loading">
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className="h-10 w-full" />
+      ))}
     </div>
   );
 }
 
 export function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-      <div className="text-[22px] font-semibold tracking-tight text-gray-900">{value}</div>
-      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</div>
-      {sub && <div className="mt-0.5 text-[12px] text-gray-500">{sub}</div>}
+    <div className="rounded-[10px] border border-[#E8E8E6] bg-white px-4 py-3">
+      <div className="text-[20px] font-semibold tracking-tight text-[#191919] tabular-nums">{value}</div>
+      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.04em] text-[#9B9B9B]">{label}</div>
+      {sub && <div className="mt-0.5 text-[12px] text-[#6B6B6B]">{sub}</div>}
     </div>
   );
 }
@@ -130,19 +175,19 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-gray-300 bg-white px-6 py-8 text-center">
-      <div className="text-[14px] font-semibold text-gray-800">{title}</div>
-      <p className="mx-auto mt-1 max-w-md text-[13px] text-gray-500">{body}</p>
-      {action && <div className="mt-3">{action}</div>}
+    <div className="rounded-[10px] border border-dashed border-[#E8E8E6] bg-white px-6 py-10 text-center">
+      <div className="text-[14px] font-medium text-[#191919]">{title}</div>
+      <p className="mx-auto mt-1 max-w-md text-[13px] leading-relaxed text-[#6B6B6B]">{body}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
 
-// Dense table cell/header class helpers
+// Dense table cell/header class helpers — Notion-like restraint
 export const th =
-  'px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap';
-export const td = 'px-3 py-2 text-[13px] text-gray-800 align-top';
-export const tr = 'border-t border-gray-100 hover:bg-gray-50';
+  'px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.04em] text-[#9B9B9B] whitespace-nowrap border-b border-[#E8E8E6]';
+export const td = 'px-3 py-2.5 text-[13px] text-[#191919] align-top';
+export const tr = 'border-b border-[#F0EFEC] hover:bg-[#F5F5F3] transition-quiet';
 
 export function fmtTime(iso: string) {
   if (!iso) return '—';

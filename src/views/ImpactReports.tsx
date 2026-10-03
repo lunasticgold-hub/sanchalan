@@ -8,9 +8,9 @@ import { Badge, Btn, EmptyState, SectionTitle, fmtDateTime, prioTone } from '../
 
 function AuditRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex gap-3 border-b border-gray-100 py-2 last:border-0">
-      <div className="w-36 shrink-0 text-[12px] font-medium uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="text-[13px] text-gray-800">{value}</div>
+    <div className="flex gap-3 border-b border-[#F0EFEC] py-2 last:border-0">
+      <div className="w-36 shrink-0 text-[12px] font-medium uppercase tracking-wide text-[#6B6B6B]">{label}</div>
+      <div className="text-[13px] text-[#2b2b2b]">{value}</div>
     </div>
   );
 }
@@ -27,8 +27,8 @@ function ChangeAudit({ c, maps }: { c: ChangeRequest; maps: Maps }) {
           ? c.parsed.params.summary
           : c.input;
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-5 py-4">
-      <h2 className="text-[16px] font-semibold text-gray-900">Change Impact Report</h2>
+    <div className="rounded-lg border border-[#E8E8E6] bg-white px-5 py-4">
+      <h2 className="text-[16px] font-semibold text-[#191919]">Change Impact Report</h2>
       <div className="mt-3">
         <AuditRow label="Event" value={changeDesc} />
         <AuditRow label="Change" value={c.input} />
@@ -70,25 +70,25 @@ function ChangeAudit({ c, maps }: { c: ChangeRequest; maps: Maps }) {
             c.status === 'applied' && c.applyResult ? (
               <span>
                 <Badge tone="green">Successful</Badge>
-                <span className="ml-2 text-[12px] text-gray-500">
+                <span className="ml-2 text-[12px] text-[#6B6B6B]">
                   {c.applyResult.updated} updated · {c.applyResult.created.length} created ({writes} proposed writes)
                 </span>
               </span>
             ) : (
-              <span className="text-gray-500">—</span>
+              <span className="text-[#6B6B6B]">—</span>
             )
           }
         />
       </div>
 
       <div className="mt-4">
-        <div className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-gray-500">Applied writes</div>
-        <div className="overflow-hidden rounded-md border border-gray-200">
+        <div className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-[#6B6B6B]">Applied writes</div>
+        <div className="overflow-hidden rounded-md border border-[#E8E8E6]">
           {plan.updates.map((u, i) => (
-            <div key={i} className="flex items-center gap-2 border-b border-gray-100 px-3 py-1.5 text-[13px] last:border-0">
+            <div key={i} className="flex items-center gap-2 border-b border-[#F0EFEC] px-3 py-1.5 text-[13px] last:border-0">
               <Badge tone="blue">Update</Badge>
-              <span className="font-mono text-[11px] text-gray-400">{u.db}</span>
-              <span className="text-gray-700">
+              <span className="font-mono text-[11px] text-[#9B9B9B]">{u.db}</span>
+              <span className="text-[#3d3d3d]">
                 {u.db === 'sessions' ? maps.session.get(u.pageId) : `${u.db} record`}
                 {' ← '}
                 {Object.keys(u.props).join(', ')}
@@ -96,24 +96,24 @@ function ChangeAudit({ c, maps }: { c: ChangeRequest; maps: Maps }) {
             </div>
           ))}
           {plan.newTasks.map((t, i) => (
-            <div key={`t${i}`} className="flex items-center gap-2 border-b border-gray-100 px-3 py-1.5 text-[13px] last:border-0">
+            <div key={`t${i}`} className="flex items-center gap-2 border-b border-[#F0EFEC] px-3 py-1.5 text-[13px] last:border-0">
               <Badge tone="green">Create</Badge>
-              <span className="font-mono text-[11px] text-gray-400">tasks</span>
-              <span className="text-gray-700">{t.title} [{t.priority}]</span>
+              <span className="font-mono text-[11px] text-[#9B9B9B]">tasks</span>
+              <span className="text-[#3d3d3d]">{t.title} [{t.priority}]</span>
             </div>
           ))}
           {plan.newComms.map((cm, i) => (
-            <div key={`c${i}`} className="flex items-center gap-2 border-b border-gray-100 px-3 py-1.5 text-[13px] last:border-0">
+            <div key={`c${i}`} className="flex items-center gap-2 border-b border-[#F0EFEC] px-3 py-1.5 text-[13px] last:border-0">
               <Badge tone="green">Create</Badge>
-              <span className="font-mono text-[11px] text-gray-400">comms</span>
-              <span className="text-gray-700">{cm.name} → {cm.audience} via {cm.channel}</span>
+              <span className="font-mono text-[11px] text-[#9B9B9B]">comms</span>
+              <span className="text-[#3d3d3d]">{cm.name} → {cm.audience} via {cm.channel}</span>
             </div>
           ))}
           {plan.newImpactReports.map((ir, i) => (
             <div key={`r${i}`} className="flex items-center gap-2 px-3 py-1.5 text-[13px]">
               <Badge tone="green">Create</Badge>
-              <span className="font-mono text-[11px] text-gray-400">impactReports</span>
-              <span className="text-gray-700">{ir.name}</span>
+              <span className="font-mono text-[11px] text-[#9B9B9B]">impactReports</span>
+              <span className="text-[#3d3d3d]">{ir.name}</span>
             </div>
           ))}
         </div>
@@ -140,7 +140,7 @@ export default function ImpactReports({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Impact Reports</h1>
+      <h1 className="text-[20px] font-semibold tracking-tight text-[#191919]">Impact Reports</h1>
 
       {selected ? (
         <div className="space-y-3">
@@ -162,10 +162,10 @@ export default function ImpactReports({
                   <button
                     key={c.id}
                     onClick={() => setSelectedId(c.id)}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-400"
+                    className="w-full rounded-lg border border-[#E8E8E6] bg-white px-4 py-3 text-left hover:border-gray-400"
                   >
-                    <div className="truncate text-[13px] font-semibold text-gray-900">{c.input}</div>
-                    <div className="mt-1 flex items-center gap-2 text-[12px] text-gray-500">
+                    <div className="truncate text-[13px] font-semibold text-[#191919]">{c.input}</div>
+                    <div className="mt-1 flex items-center gap-2 text-[12px] text-[#6B6B6B]">
                       <Badge tone={c.status === 'applied' ? 'green' : 'amber'}>
                         {c.status === 'applied' ? 'Applied' : 'Awaiting approval'}
                       </Badge>
@@ -183,13 +183,13 @@ export default function ImpactReports({
             ) : (
               <div className="space-y-2">
                 {records.impactReports.map((ir) => (
-                  <div key={ir.id} className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+                  <div key={ir.id} className="rounded-lg border border-[#E8E8E6] bg-white px-4 py-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-gray-900">{ir.name}</span>
+                      <span className="text-[13px] font-semibold text-[#191919]">{ir.name}</span>
                       <ProvenanceBadge source={ir.source} />
                     </div>
-                    <div className="mt-1 text-[12px] text-gray-500">Trigger: {ir.trigger}</div>
-                    <p className="mt-1 text-[13px] text-gray-700">{ir.summary}</p>
+                    <div className="mt-1 text-[12px] text-[#6B6B6B]">Trigger: {ir.trigger}</div>
+                    <p className="mt-1 text-[13px] text-[#3d3d3d]">{ir.summary}</p>
                   </div>
                 ))}
               </div>

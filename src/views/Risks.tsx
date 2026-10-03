@@ -95,14 +95,14 @@ export default function Risks({
                   <button
                     key={r.id}
                     onClick={() => setView(r.view)}
-                    className="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300"
+                    className="block w-full rounded-lg border border-[#E8E8E6] bg-white px-4 py-3 text-left hover:border-[#D9D9D6]"
                   >
                     <div className="flex items-center gap-2">
                       <Badge tone={sevTone(r.severity)}>{r.severity === 'Critical' ? 'P0' : r.severity === 'Warning' ? 'P1' : 'P2'}</Badge>
-                      <span className="text-[14px] font-semibold text-gray-900">{r.name}</span>
-                      <span className="ml-auto text-[11px] uppercase tracking-wide text-gray-400">{r.category}</span>
+                      <span className="text-[14px] font-semibold text-[#191919]">{r.name}</span>
+                      <span className="ml-auto text-[11px] uppercase tracking-wide text-[#9B9B9B]">{r.category}</span>
                     </div>
-                    <div className="mt-1 text-[13px] text-gray-600">{r.description}</div>
+                    <div className="mt-1 text-[13px] text-[#6B6B6B]">{r.description}</div>
                   </button>
                 ))}
               </div>
