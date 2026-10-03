@@ -1,6 +1,6 @@
 // Auth page: sign in / sign up with Supabase.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 export default function Auth({ onDone }: { onDone: () => void }) {
@@ -11,6 +11,18 @@ export default function Auth({ onDone }: { onDone: () => void }) {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [newPw, setNewPw] = useState(false);
+
+  // Listen for password recovery link clicks
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setNewPw(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   const friendlyError = (msg: string) => {
     if (/rate limit|security purposes|after \d+ seconds/i.test(msg)) {
@@ -46,6 +58,115 @@ export default function Auth({ onDone }: { onDone: () => void }) {
       setBusy(false);
     }
   };
+
+  const sendReset = async () => {
+    if (!supabase || !email.trim()) return;
+    setErr('');
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin,
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (e: any) {
+      setErr(friendlyError(e?.message ?? 'Something went wrong'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const updatePassword = async () => {
+    if (!supabase || !password) return;
+    setErr('');
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setNewPw(false);
+      onDone();
+    } catch (e: any) {
+      setErr(friendlyError(e?.message ?? 'Something went wrong'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (newPw) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
+        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+          <div className="mt-0.5 text-[13px] text-gray-500">Set a new password</div>
+          <input
+            type={showPw ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="New password"
+            autoComplete="new-password"
+            onKeyDown={(e) => e.key === 'Enter' && updatePassword()}
+            className="mt-4 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+          />
+          {err && <p className="mt-3 text-[13px] font-medium text-red-700">{err}</p>}
+          <button
+            onClick={updatePassword}
+            disabled={busy || !password}
+            className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
+          >
+            {busy ? 'Saving…' : 'Save new password'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (resetMode) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] px-4">
+        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="text-[18px] font-bold tracking-tight text-gray-900">Sanchalan</div>
+          <div className="mt-0.5 text-[13px] text-gray-500">Reset your password</div>
+          {resetSent ? (
+            <div className="mt-4 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-[20px]">✉</div>
+              <p className="mt-3 text-[13px] text-gray-600">
+                If an account exists for <span className="font-medium text-gray-900">{email.trim()}</span>, you'll get a reset link shortly.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="mt-3 text-[13px] text-gray-600">Enter your email and we'll send you a reset link.</p>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                autoComplete="email"
+                onKeyDown={(e) => e.key === 'Enter' && sendReset()}
+                className="mt-3 w-full rounded-md border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none"
+              />
+            </>
+          )}
+          {err && <p className="mt-3 text-[13px] font-medium text-red-700">{err}</p>}
+          {!resetSent && (
+            <button
+              onClick={sendReset}
+              disabled={busy || !email.trim()}
+              className="mt-4 w-full rounded-md bg-gray-900 px-4 py-2 text-[14px] font-medium text-white disabled:opacity-40"
+            >
+              {busy ? 'Sending…' : 'Send reset link'}
+            </button>
+          )}
+          <button
+            onClick={() => { setResetMode(false); setResetSent(false); setErr(''); }}
+            className="mt-2 w-full rounded-md px-4 py-2 text-[13px] font-medium text-gray-500 hover:bg-gray-100"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (checkEmail) {
     return (
@@ -126,6 +247,15 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         >
           {busy ? 'Please wait…' : mode === 'in' ? 'Sign in' : 'Create account'}
         </button>
+
+        {mode === 'in' && (
+          <button
+            onClick={() => { setResetMode(true); setErr(''); setResetSent(false); }}
+            className="mt-2 w-full text-center text-[13px] font-medium text-gray-500 hover:text-gray-800"
+          >
+            Forgot password?
+          </button>
+        )}
 
         <p className="mt-4 text-center text-[12px] text-gray-500">
           Your event data stays in Notion. Sanchalan only uses your login to know who approved what.
