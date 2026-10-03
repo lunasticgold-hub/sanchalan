@@ -350,6 +350,7 @@ export default function Dashboard() {
               setView={setView}
               onReview={reviewChange}
               activeEvent={events.find((e) => e.id === activeEventId) ?? null}
+              updateCustomData={updateCustomData}
             />
           )}
           {view === 'live' && <Live records={activeRecords} changes={changes} />}

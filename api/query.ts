@@ -61,11 +61,12 @@ function notionRowToFlat(db: string, page: any): Record<string, any> {
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const token = process.env.NOTION_TOKEN;
+  // Allow per-request token/databaseId (custom workspaces), fallback to server defaults
+  const token = req.body?.token || process.env.NOTION_TOKEN;
   if (!token) return res.status(501).json({ error: 'NOTION_TOKEN not configured' });
 
   const db = req.body?.db as string;
-  const databaseId = db ? DB_IDS[db] : '';
+  const databaseId = req.body?.databaseId || (db ? DB_IDS[db] : '');
   if (!db || !databaseId) return res.status(400).json({ error: 'Unknown or unconfigured db' });
 
   try {

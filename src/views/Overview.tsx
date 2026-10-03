@@ -4,6 +4,7 @@
 import type { ChangeRequest, Records } from '../lib/types';
 import { EST_ATTENDEES } from '../lib/engine';
 import { Badge, Btn, EmptyState, SectionTitle, cx, fmtDate, prioTone } from '../components/ui';
+import PullFromNotionBanner from '../components/PullFromNotionBanner';
 import type { View } from '../components/Sidebar';
 
 function relativeDay(iso: string) {
@@ -25,12 +26,14 @@ export default function Overview({
   setView,
   onReview,
   activeEvent,
+  updateCustomData,
 }: {
   records: Records;
   changes: ChangeRequest[];
   setView: (v: View) => void;
   onReview: (id: string) => void;
   activeEvent?: { id: string; name: string; date?: string; location?: string; organizer?: string; expectedAttendance?: number } | null;
+  updateCustomData?: (updater: (r: Records) => Records) => void;
 }) {
   const notionEvent = records.events[0];
   const event = activeEvent && activeEvent.id.startsWith('custom-')
@@ -50,20 +53,11 @@ export default function Overview({
   return (
     <div className="space-y-6">
       {isEmptyCustom && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5">
-          <div className="text-[15px] font-semibold text-gray-900">Set up your event</div>
-          <p className="mt-1 max-w-lg text-[13.5px] leading-relaxed text-gray-600">
-            This is a blank event — add your real data to start running it. Click any card below
-            (Sessions, Volunteers, Tasks…), then hit <strong>+ Add</strong> to create records.
-            Or start with the essentials:
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={() => setView('venues')} className="rounded-lg bg-gray-900 px-3.5 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800">+ Add venue</button>
-            <button onClick={() => setView('sessions')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add session</button>
-            <button onClick={() => setView('volunteers')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add volunteer</button>
-            <button onClick={() => setView('tasks')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add task</button>
-          </div>
-        </div>
+        <PullFromNotionBanner
+          eventId={activeEvent.id}
+          setView={setView}
+          onPulled={(updater) => updateCustomData?.(updater)}
+        />
       )}
       {/* Operational status */}
       <section>

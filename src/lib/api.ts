@@ -35,6 +35,28 @@ export async function fetchAllRecords(): Promise<{ records: Records; demo: boole
   }
 }
 
+// Fetch records from a user's own Notion workspace (custom event).
+// mapping: { token, databases: { venues: id, sessions: id, ... } }
+export async function fetchCustomWorkspace(
+  token: string,
+  databases: Record<string, string>
+): Promise<Partial<Records>> {
+  const out: Partial<Records> = {};
+  await Promise.all(
+    DB_KEYS.map(async (db) => {
+      const dbId = databases[db];
+      if (!dbId) return;
+      try {
+        const json = await post('/api/query', { db, token, databaseId: dbId });
+        (out as any)[db] = json.rows ?? [];
+      } catch {
+        // Skip databases that fail (wrong schema, no access, etc.)
+      }
+    })
+  );
+  return out;
+}
+
 export async function parseUpdate(text: string): Promise<ParsedChange & { via?: string }> {
   try {
     return await post('/api/parse', { text });
