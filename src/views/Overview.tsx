@@ -3,7 +3,7 @@
 
 import type { ChangeRequest, Records } from '../lib/types';
 import { EST_ATTENDEES } from '../lib/engine';
-import { Badge, Btn, EmptyState, SectionTitle, Stat, cx, fmtDate, prioTone } from '../components/ui';
+import { Badge, Btn, EmptyState, SectionTitle, cx, fmtDate, prioTone } from '../components/ui';
 import type { View } from '../components/Sidebar';
 
 function relativeDay(iso: string) {
