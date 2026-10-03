@@ -1,7 +1,7 @@
 // Connect Notion directly from the event page — no wizard needed.
 // Paste token → discover databases → save mapping → pull data.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchCustomWorkspace } from '../lib/api';
 import { emptyRecords } from '../lib/eventData';
 import type { Records } from '../lib/types';
@@ -29,17 +29,39 @@ export default function ConnectNotionModal({
   onClose: () => void;
   onPulled: (updater: (r: Records) => Records) => void;
 }) {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(() => {
+    // Pre-fill from saved token: this event's mapping first, then global
+    try {
+      const eventRaw = localStorage.getItem(`sanchalan_notion_map_${eventId}`);
+      if (eventRaw) {
+        const t = JSON.parse(eventRaw)?.token;
+        if (t) return t;
+      }
+      return localStorage.getItem('sanchalan_notion_token') ?? '';
+    } catch {
+      return '';
+    }
+  });
   const [discovering, setDiscovering] = useState(false);
   const [discoverErr, setDiscoverErr] = useState('');
   const [discovered, setDiscovered] = useState<{ id: string; name: string }[] | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncErr, setSyncErr] = useState('');
   const [done, setDone] = useState<number | null>(null);
+  const [autoTried, setAutoTried] = useState(false);
 
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
   const matchDb = (expected: string) =>
     discovered?.find((d) => norm(d.name).includes(norm(expected)) || norm(expected).includes(norm(d.name))) ?? null;
+
+  // Auto-discover on open if we already have a token
+  useEffect(() => {
+    if (!autoTried && token.trim()) {
+      setAutoTried(true);
+      discover();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const discover = async () => {
     if (!token.trim()) return;
@@ -72,9 +94,10 @@ export default function ConnectNotionModal({
         if (m) mapping[key] = m.id;
       });
       if (Object.keys(mapping).length === 0) throw new Error('No databases matched. Check the names.');
-      // Save mapping for this event
+      // Save mapping for this event + remember token globally
       try {
         localStorage.setItem(`sanchalan_notion_map_${eventId}`, JSON.stringify({ token: token.trim(), databases: mapping }));
+        localStorage.setItem('sanchalan_notion_token', token.trim());
       } catch {}
       // Pull data
       const pulled = await fetchCustomWorkspace(token.trim(), mapping);
