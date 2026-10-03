@@ -2,9 +2,11 @@
 // Operational status, active risks, pending changes, today's operations.
 
 import type { ChangeRequest, Records } from '../lib/types';
+import { useState } from 'react';
 import { EST_ATTENDEES } from '../lib/engine';
 import { Badge, Btn, EmptyState, SectionTitle, cx, fmtDate, prioTone } from '../components/ui';
 import PullFromNotionBanner from '../components/PullFromNotionBanner';
+import ConnectNotionModal from '../components/ConnectNotionModal';
 import type { View } from '../components/Sidebar';
 
 function relativeDay(iso: string) {
@@ -50,6 +52,8 @@ export default function Overview({
     records.sessions.length === 0 && records.tasks.length === 0 &&
     records.volunteers.length === 0 && records.attendees.length === 0;
 
+  const [showConnect, setShowConnect] = useState(false);
+
   return (
     <div className="space-y-6">
       {isEmptyCustom && activeEvent && (
@@ -57,6 +61,27 @@ export default function Overview({
           eventId={activeEvent.id}
           setView={setView}
           onPulled={(updater) => updateCustomData?.(updater)}
+        />
+      )}
+      {/* Sync button for custom events that already have data */}
+      {!isEmptyCustom && activeEvent?.id.startsWith('custom-') && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowConnect(true)}
+            className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
+          >
+            ⇄ Sync from Notion
+          </button>
+        </div>
+      )}
+      {showConnect && activeEvent && (
+        <ConnectNotionModal
+          eventId={activeEvent.id}
+          onClose={() => setShowConnect(false)}
+          onPulled={(updater) => {
+            updateCustomData?.(updater);
+            setShowConnect(false);
+          }}
         />
       )}
       {/* Operational status */}

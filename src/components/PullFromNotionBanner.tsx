@@ -6,6 +6,7 @@ import { fetchCustomWorkspace } from '../lib/api';
 import { emptyRecords } from '../lib/eventData';
 import type { Records } from '../lib/types';
 import type { View } from '../components/Sidebar';
+import ConnectNotionModal from './ConnectNotionModal';
 
 export default function PullFromNotionBanner({
   eventId,
@@ -19,6 +20,7 @@ export default function PullFromNotionBanner({
   const [pulling, setPulling] = useState(false);
   const [err, setErr] = useState('');
   const [pulledCount, setPulledCount] = useState<number | null>(null);
+  const [showConnect, setShowConnect] = useState(false);
 
   const hasMapping = (() => {
     try {
@@ -62,13 +64,20 @@ export default function PullFromNotionBanner({
           </p>
           {err && <p className="mt-2 text-[13px] text-red-600">{err}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
-            {hasMapping && (
+            {hasMapping ? (
               <button
                 onClick={pull}
                 disabled={pulling}
                 className="rounded-lg bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800 disabled:opacity-50"
               >
                 {pulling ? 'Pulling from Notion…' : '↓ Pull from Notion'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowConnect(true)}
+                className="rounded-lg bg-gray-900 px-4 py-1.5 text-[13px] font-medium text-white hover:bg-gray-800"
+              >
+                ⇄ Connect Notion & Sync
               </button>
             )}
             <button onClick={() => setView('venues')} className="rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50">+ Add venue</button>
@@ -78,10 +87,20 @@ export default function PullFromNotionBanner({
           </div>
           {!hasMapping && (
             <p className="mt-2 text-[12px] text-gray-500">
-              To pull from Notion, create this event via the wizard with your Notion token.
+              Connect your Notion workspace to pull your real event data.
             </p>
           )}
         </>
+      )}
+      {showConnect && (
+        <ConnectNotionModal
+          eventId={eventId}
+          onClose={() => setShowConnect(false)}
+          onPulled={(updater) => {
+            onPulled(updater);
+            setShowConnect(false);
+          }}
+        />
       )}
     </div>
   );
